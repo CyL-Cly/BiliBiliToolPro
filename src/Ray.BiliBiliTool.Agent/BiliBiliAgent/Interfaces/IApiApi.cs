@@ -414,21 +414,25 @@ public interface IApiApi
     );
 
     /// <summary>
-    /// 开始观看剧集任务
-    /// NOTE: HTTP verb unknown — stub method without Refit verb attribute
+    /// 开始观看剧集任务，返回该次观看的 task_id 与 token
     /// </summary>
+    [Headers("app-key: android64", "env: prod")]
+    [Post("/pgc/activity/deliver/material/receive")]
     Task<BiliApiResponse<StartOgvWatchResponse>> StartOgvWatchAsync(
-        StartOgvWatchRequest request,
-        [Header("Cookie")] string ck
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
+        [Header("Cookie")] string ck,
+        [Header("buvid")] string buvid
     );
 
     /// <summary>
-    /// 完成观看剧集任务
-    /// NOTE: HTTP verb unknown — stub method without Refit verb attribute
+    /// 上报完成观看剧集任务（只能成功一次，重复调用返回 -400）
     /// </summary>
+    [Headers("app-key: android64", "env: prod")]
+    [Post("/pgc/activity/deliver/task/complete")]
     Task<BiliApiResponse> CompleteOgvWatchAsync(
-        CompleteOgvWatchRequest request,
-        [Header("Cookie")] string ck
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
+        [Header("Cookie")] string ck,
+        [Header("buvid")] string buvid
     );
 
     #endregion

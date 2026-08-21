@@ -263,6 +263,56 @@ public class VipBigPointDomainService(
         return false;
     }
 
+    /// <summary>
+    /// 完成观看剧集任务（APP deliver 流程：开始观看 → 上报完成）
+    /// </summary>
+    /// <remarks>
+    /// 旧的 score/task/complete/v2 对该任务已返回 -400，
+    /// 需先经 deliver/material/receive 获取 task_id 与 token，再经 deliver/task/complete 上报完成（只能成功一次）。
+    /// </remarks>
+    public async Task<bool> CompleteOgvWatchAsync(BiliCookie ck)
+    {
+        LogAccessKeyWarning(ck);
+
+        //开始观看任务
+        var startRe = await apiApi.StartOgvWatchAsync(
+            OgvWatchRequest.BuildStart(ck),
+            ck.ToString(),
+            ck.Buvid
+        );
+        if (startRe.Code != 0)
+        {
+            logger.LogInformation("开始观看剧集任务失败：{msg}", startRe.ToJsonStr());
+            return false;
+        }
+
+        var watchCfg = startRe.Data?.watch_count_down_cfg;
+        if (
+            watchCfg == null
+            || !long.TryParse(watchCfg.task_id, out long taskId)
+            || string.IsNullOrEmpty(watchCfg.token)
+        )
+        {
+            logger.LogInformation("开始观看剧集任务失败：响应缺少 task_id/token");
+            return false;
+        }
+
+        //上报完成
+        var re = await apiApi.CompleteOgvWatchAsync(
+            OgvWatchRequest.BuildComplete(taskId, watchCfg.token, ck),
+            ck.ToString(),
+            ck.Buvid
+        );
+        if (re.Code == 0)
+        {
+            logger.LogInformation("已完成");
+            return true;
+        }
+
+        logger.LogInformation("失败：{msg}", re.ToJsonStr());
+        return false;
+    }
+
     #region private
 
     /// <summary>

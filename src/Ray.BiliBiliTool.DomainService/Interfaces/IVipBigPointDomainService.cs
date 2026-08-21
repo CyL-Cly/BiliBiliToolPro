@@ -28,4 +28,6 @@ public interface IVipBigPointDomainService : IDomainService
     Task<bool> CompleteViewVipMallAsync(string taskCode, BiliCookie ck);
 
     Task<bool> CompleteV2Async(string taskCode, BiliCookie ck);
+
+    Task<bool> CompleteOgvWatchAsync(BiliCookie ck);
 }
