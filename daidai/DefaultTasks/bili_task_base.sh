@@ -47,9 +47,21 @@ say_err() { printf "%b\n" "${red:-}bilitool: Error: $1${normal:-}" >&2; }
 say() { printf "%b\n" "${cyan:-}bilitool:${normal:-} $1" >&3; }
 say_verbose() { if [ "$verbose" = true ]; then say "$1"; fi; }
 
-# 尝试加载已安装 dotnet 的 PATH（官方脚本会把 PATH 写进 .bashrc）
-touch /root/.bashrc 2>/dev/null && . /root/.bashrc 2>/dev/null || true
-[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc" 2>/dev/null || true
+# 面板非交互任务环境可能不带 HOME；set -u 下直接读会立刻退出。
+# 必须 export：dotnet/NuGet 作为子进程也依赖 HOME（或 DOTNET_CLI_HOME）。
+export HOME="${HOME:-/root}"
+export DOTNET_CLI_HOME="${DOTNET_CLI_HOME:-$HOME}"
+
+# 补上官方脚本可能写进 bashrc 的 PATH。
+# 不能直接 source ~/.bashrc：非交互 shell 没有 PS1 时，bashrc 里的
+# `[ -z "$PS1" ] && return` 会把整个任务脚本提前结束。
+if [ -d "$HOME/.dotnet" ]; then
+    export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
+    case ":${PATH:-}:" in
+        *":$DOTNET_ROOT:"*) ;;
+        *) export PATH="${PATH:-}:$DOTNET_ROOT:$DOTNET_ROOT/tools" ;;
+    esac
+fi
 
 # 用仓库根标记文件向上查找仓库根目录：stable(DefaultTasks/) 与 dev(DefaultTasks/dev/)
 # 深度不同，但都能靠 Ray.BiliBiliTool.sln 这个根文件定位，从而共用同一份 base。
@@ -236,12 +248,18 @@ install_dotnet_by_script() {
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0 --verbose
 
     say "添加到PATH"
-    local exportFile="/root/.bashrc"
-    touch $exportFile
-    echo '' >>$exportFile
-    echo 'export DOTNET_ROOT=$HOME/.dotnet' >>$exportFile
-    echo 'export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools' >>$exportFile
-    . $exportFile
+    export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
+    case ":${PATH:-}:" in
+        *":$DOTNET_ROOT:"*) ;;
+        *) export PATH="${PATH:-}:$DOTNET_ROOT:$DOTNET_ROOT/tools" ;;
+    esac
+    # 持久化给交互 shell 用；不要 source bashrc（非交互时会 return 掉整个任务）
+    local exportFile="$HOME/.bashrc"
+    if [ -f "$exportFile" ] || touch "$exportFile" 2>/dev/null; then
+        if ! grep -q 'DOTNET_ROOT=' "$exportFile" 2>/dev/null; then
+            printf '\nexport DOTNET_ROOT=$HOME/.dotnet\nexport PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools\n' >>"$exportFile"
+        fi
+    fi
 }
 
 install_dotnet() {
@@ -344,6 +362,9 @@ run_task() {
 
     export Ray_PlatformType=DaiDai
     export Ray_RunTasks=$target_code
+    # 面板容器不是开发仓库，跳过 git hook 安装（csproj 里 Condition="'$(HUSKY)' != 0"）
+    export HUSKY=0
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
     if [ "$prefer_mode" == "dotnet" ]; then
         cd "$bilitool_repo_dir/src/Ray.BiliBiliTool.Console"
@@ -353,9 +374,19 @@ run_task() {
         if [ ! -f "$props_file" ]; then
             printf '<Project>\n  <PropertyGroup>\n    <NoWarn>$(NoWarn);NETSDK1188;CS9057;CS8618;CS9042;CS8625;CS8603;CS8602;CS8601;CS8600;CS8604</NoWarn>\n  </PropertyGroup>\n</Project>' >"$props_file"
             props_created=true
+        elif grep -q 'NETSDK1188' "$props_file" 2>/dev/null; then
+            # 上次运行被中断遗留下来的本脚本生成的 props，认领并在运行后一并清理
+            props_created=true
         fi
-        dotnet run -v m -- --ENVIRONMENT=Production
-        [ "$props_created" = true ] && rm -f "$props_file"
+        # 记录 dotnet run 自身退出码，避免被后面的清理语句覆盖
+        local app_exit=0
+        dotnet run -v m -- --ENVIRONMENT=Production || app_exit=$?
+        # 注意不能写成 `[ "$props_created" = true ] && rm -f`：未创建时该复合命令返回1，
+        # 在 set -e 下会让任务明明成功、整个脚本却以退出码1结束（且残留文件永远清不掉）
+        if [ "$props_created" = true ]; then
+            rm -f "$props_file"
+        fi
+        return $app_exit
     else
         cd "$bilitool_repo_dir/bin"
         chmod +x ./Ray.BiliBiliTool.Console && ./Ray.BiliBiliTool.Console --ENVIRONMENT=Production

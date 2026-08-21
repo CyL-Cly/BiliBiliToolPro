@@ -8,7 +8,7 @@
 
 ## 复用青龙脚本（与各面板保持一致的做法）
 
-各任务脚本（`bili_task_daily.sh` 等）的内容与青龙版**完全一致**——都只是 `. bili_task_base.sh; run_task "Xxx"`，与具体面板无关。所以本目录**不重复维护这些脚本**，而是：
+各任务脚本（`bili_task_daily.sh` 等）的内容与青龙版**完全一致**——都只是 source 同目录的 `bili_task_base.sh` 再 `run_task "Xxx"`，与具体面板无关。所以本目录**不重复维护这些脚本**，而是：
 
 - `daidai/` 只保留一份**面板专属的 `bili_task_base.sh`**（负责呆呆面板下的运行环境安装与定位）；
 - 各任务脚本由订阅钩子 [`daidai/copyshfile.sh`](./copyshfile.sh) 在拉库后、建任务前，从 `qinglong/DefaultTasks` 复用拷贝过来；
@@ -197,3 +197,15 @@ https://gh-proxy.com/https://github.com/RayWangQvQ/BiliBiliToolPro.git
 - 是否有 `[执行订阅钩子]` 且同步了脚本 → 没有就检查「钩子脚本」是否填了 `bash daidai/copyshfile.sh`；
 - 「扫描脚本…识别出 N 个含 cron 的脚本」→ 为 0 就检查白名单是否写成了 `bili_task_`、文件后缀是否含 `sh`；
 - 一个文件都没扫到 → 多半是拉库失败。
+
+### 6.6. `bili_task_base.sh: No such file or directory` / `run_task: command not found`
+
+任务脚本会按**自身所在目录**去 source `bili_task_base.sh`，不再依赖当前工作目录。如果你还看到旧报错：
+
+1. 确认订阅钩子 `bash daidai/copyshfile.sh` 已跑过，`daidai/DefaultTasks/` 里同时有 `bili_task_login.sh` 和 `bili_task_base.sh`；
+2. 重新拉一次订阅，让钩子把新版任务脚本同步过来；
+3. 不要用旧副本手动跑。正确姿势是在面板点「运行」，或用脚本绝对路径执行（例如 `bash /root/daidaimianban/data/scripts/BiliBiliToolPro/daidai/DefaultTasks/bili_task_login.sh`）。
+
+### 6.7. 脚本立刻静默退出、没有任何输出
+
+旧版 base 会 `source ~/.bashrc`。非交互执行时 bashrc 里常见的 `[ -z "$PS1" ] && return` 会把整个任务脚本提前结束。新版改为只补 `$HOME/.dotnet` 到 PATH，不再 source bashrc。同步 `daidai/DefaultTasks/bili_task_base.sh` 后再跑即可。

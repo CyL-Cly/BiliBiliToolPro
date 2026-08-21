@@ -8,7 +8,7 @@
 #   1. 把 qinglong/DefaultTasks 下的 bili_task_*.sh（base 除外）拷到 daidai/DefaultTasks；
 #   2. 把 qinglong/DefaultTasks/dev 下的 bili_dev_task_*.sh（base 除外）拷到 daidai/DefaultTasks/dev；
 #   3. 删除 qinglong 目录，避免青龙版脚本（依赖 /ql 路径）被面板误登记成任务。
-# 各任务脚本只是 `. bili_task_base.sh; run_task "Xxx"`，与面板无关，所以可直接复用；
+# 各任务脚本只是 source 同目录的 base 再 run_task "Xxx"，与面板无关，所以可直接复用；
 # 真正面板相关的“环境安装/定位”只在 daidai 自己的 bili_task_base.sh 里实现。
 
 set -e
