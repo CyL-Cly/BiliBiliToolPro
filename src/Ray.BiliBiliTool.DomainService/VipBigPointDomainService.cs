@@ -136,7 +136,10 @@ public class VipBigPointDomainService(
         const string moduleCode = "日常任务";
 
         var module = combine.Task_info.Modules.FirstOrDefault(x => x.module_title == moduleCode);
-        var missionsNeedReceive = module?.common_task_item.Where(x => x.state == 0).ToList();
+        var missionsNeedReceive = module
+            ?.common_task_item.Where(x => x.state == 0)
+            .Where(x => !PurchaseTaskCodes.Contains(x.task_code))
+            .ToList();
         if (missionsNeedReceive == null || missionsNeedReceive.Count == 0)
         {
             logger.LogInformation("均已领取，跳过");
@@ -247,8 +250,9 @@ public class VipBigPointDomainService(
 
     public async Task<bool> CompleteV2Async(string taskCode, BiliCookie ck)
     {
-        var request = new ReceiveOrCompleteTaskRequest(taskCode);
-        var re = await apiApi.VipBigPointCompleteV2(request, ck.ToString());
+        LogAccessKeyWarning(ck);
+        var request = ScoreTaskV2Request.Build(taskCode, ck);
+        var re = await apiApi.VipBigPointCompleteV2(request, ck.ToString(), ck.Buvid);
         if (re.Code == 0)
         {
             logger.LogInformation("已完成");
@@ -262,6 +266,16 @@ public class VipBigPointDomainService(
     #region private
 
     /// <summary>
+    /// 需要购买才能完成的任务，不领取
+    /// </summary>
+    private static readonly HashSet<string> PurchaseTaskCodes =
+    [
+        "vipmallbuy",
+        "tvodbuy",
+        "dressbuyamount",
+    ];
+
+    /// <summary>
     /// 领取任务
     /// </summary>
     private async Task TryReceive(string taskCode, BiliCookie ck)
@@ -269,8 +283,9 @@ public class VipBigPointDomainService(
         BiliApiResponse? re = null;
         try
         {
-            var request = new ReceiveOrCompleteTaskRequest(taskCode);
-            re = await apiApi.VipBigPointReceiveV2(request, ck.ToString());
+            LogAccessKeyWarning(ck);
+            var request = ScoreTaskV2Request.Build(taskCode, ck);
+            re = await apiApi.VipBigPointReceiveV2(request, ck.ToString(), ck.Buvid);
             if (re.Code == 0)
                 logger.LogInformation("领取任务成功");
             else
@@ -281,6 +296,14 @@ public class VipBigPointDomainService(
             logger.LogError("领取任务异常");
             logger.LogError(e.Message + re?.ToJsonStr());
         }
+    }
+
+    private void LogAccessKeyWarning(BiliCookie ck)
+    {
+        if (string.IsNullOrEmpty(ck.AccessKey))
+            logger.LogWarning(
+                "未在 cookie 中配置 access_key，赚积分任务领取/完成可能失败，建议在 cookie 字符串中追加 access_key=xxx"
+            );
     }
 
     private async Task<bool> WatchBangumi(BiliCookie ck)

@@ -360,11 +360,15 @@ public interface IApiApi
         [Header("Cookie")] string ck
     );
 
-    [Headers("Referer: https://big.bilibili.com/mobile/bigPoint/task")]
+    [Headers(
+        "Referer: https://big.bilibili.com/mobile/bigPoint/task",
+        "native_api_from: h5"
+    )]
     [Post("/pgc/activity/score/task/receive/v2")]
     Task<BiliApiResponse> VipBigPointReceiveV2(
-        [Body(BodySerializationMethod.UrlEncoded)] ReceiveOrCompleteTaskRequest request,
-        [Header("Cookie")] string ck
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
+        [Header("Cookie")] string ck,
+        [Header("buvid")] string buvid
     );
 
     [Headers("Referer: https://big.bilibili.com/mobile/bigPoint/task")]
@@ -374,11 +378,15 @@ public interface IApiApi
         [Header("Cookie")] string ck
     );
 
-    [Headers("Referer: https://big.bilibili.com/mobile/bigPoint/task")]
+    [Headers(
+        "Referer: https://big.bilibili.com/mobile/bigPoint/task",
+        "native_api_from: h5"
+    )]
     [Post("/pgc/activity/score/task/complete/v2")]
     Task<BiliApiResponse> VipBigPointCompleteV2(
-        [Body(BodySerializationMethod.UrlEncoded)] ReceiveOrCompleteTaskRequest request,
-        [Header("Cookie")] string ck
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
+        [Header("Cookie")] string ck,
+        [Header("buvid")] string buvid
     );
 
     /// <summary>

@@ -57,6 +57,18 @@ public class BiliCookie(Dictionary<string, string> cookieDic) : CookieInfo(cooki
             ? buvid
             : "";
 
+    /// <summary>
+    /// APP 登录 Token（可选，配置在 cookie 字符串中：access_key=xxx）
+    /// </summary>
+    [Description("access_key")]
+    public string AccessKey =>
+        CookieItemDictionary.TryGetValue(
+            GetPropertyDescription(nameof(AccessKey)),
+            out string? accessKey
+        )
+            ? accessKey
+            : "";
+
     #endregion
 
 

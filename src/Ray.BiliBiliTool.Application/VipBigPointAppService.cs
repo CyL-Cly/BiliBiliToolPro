@@ -162,12 +162,9 @@ public class VipBigPointAppService(
     {
         await DailyDressViewMissionAsync(combine, ck, cancellationToken);
         await DailyVipMallViewMissionAsync(combine, ck, cancellationToken);
-        await DailyVipMallBuyMissionAsync(cancellationToken);
         await DailyAnimateTabMissionAsync(combine, ck, cancellationToken);
         await DailyFilmTabMissionAsync(combine, ck, cancellationToken);
         await DailyOgvWatchMissionAsync(combine, ck, cancellationToken);
-        await DailyTvOdBuyMissionAsync(cancellationToken);
-        await DailyDressBuyAmountMissionAsync(cancellationToken);
     }
 
     [TaskInterceptor("日常1：浏览装扮商城", TaskLevel.Three, rethrowWhenException: false)]
@@ -203,14 +200,7 @@ public class VipBigPointAppService(
         );
     }
 
-    [TaskInterceptor("日常3：购买会员购", TaskLevel.Three, rethrowWhenException: false)]
-    private Task DailyVipMallBuyMissionAsync(CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("需购买，跳过");
-        return Task.CompletedTask;
-    }
-
-    [TaskInterceptor("日常4：浏览追番频道", TaskLevel.Three, rethrowWhenException: false)]
+    [TaskInterceptor("日常3：浏览追番频道", TaskLevel.Three, rethrowWhenException: false)]
     private async Task DailyAnimateTabMissionAsync(
         VipBigPointCombine combine,
         BiliCookie ck,
@@ -226,7 +216,7 @@ public class VipBigPointAppService(
         );
     }
 
-    [TaskInterceptor("日常5：浏览影视频道", TaskLevel.Three, rethrowWhenException: false)]
+    [TaskInterceptor("日常4：浏览影视频道", TaskLevel.Three, rethrowWhenException: false)]
     private async Task DailyFilmTabMissionAsync(
         VipBigPointCombine combine,
         BiliCookie ck,
@@ -242,7 +232,7 @@ public class VipBigPointAppService(
         );
     }
 
-    [TaskInterceptor("日常6：观看剧集", TaskLevel.Three, rethrowWhenException: false)]
+    [TaskInterceptor("日常5：观看剧集", TaskLevel.Three, rethrowWhenException: false)]
     private async Task DailyOgvWatchMissionAsync(
         VipBigPointCombine combine,
         BiliCookie ck,
@@ -256,19 +246,5 @@ public class VipBigPointAppService(
             ck,
             async (_, _) => await vipBigPointDomainService.CompleteV2Async("ogvwatchnew", ck)
         );
-    }
-
-    [TaskInterceptor("日常7：购买影片", TaskLevel.Three, rethrowWhenException: false)]
-    private Task DailyTvOdBuyMissionAsync(CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("需购买，跳过");
-        return Task.CompletedTask;
-    }
-
-    [TaskInterceptor("日常8：购买装扮", TaskLevel.Three, rethrowWhenException: false)]
-    private Task DailyDressBuyAmountMissionAsync(CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("需购买，跳过");
-        return Task.CompletedTask;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Ray.BiliBiliTool.Agent;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Interfaces;
 using Ray.BiliBiliTool.Application.Contracts;
@@ -14,14 +15,27 @@ public class VipServiceTest
         Program.CreateHost(new[] { "--ENVIRONMENT=Development" });
     }
 
+    private static BiliCookie CreateTestCookie() =>
+        new(
+            new Dictionary<string, string>
+            {
+                ["DedeUserID"] = "0",
+                ["SESSDATA"] = "",
+                ["bili_jct"] = "",
+                ["buvid3"] = "",
+            }
+        );
+
     [Fact]
     public async Task CompleteV2Test()
     {
         using var scope = Global.ServiceProviderRoot.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApiApi>();
+        var ck = CreateTestCookie();
         var res = await api.VipBigPointCompleteV2(
-            new ReceiveOrCompleteTaskRequest("dress-view"),
-            null
+            ScoreTaskV2Request.Build("dress-view", ck),
+            ck.ToString(),
+            ck.Buvid
         );
         Assert.True(res.Code == 0);
     }
@@ -31,9 +45,11 @@ public class VipServiceTest
     {
         using var scope = Global.ServiceProviderRoot.CreateScope();
         var api = scope.ServiceProvider.GetRequiredService<IApiApi>();
+        var ck = CreateTestCookie();
         var res = await api.VipBigPointReceiveV2(
-            new ReceiveOrCompleteTaskRequest("ogvwatchnew"),
-            null
+            ScoreTaskV2Request.Build("ogvwatchnew", ck),
+            ck.ToString(),
+            ck.Buvid
         );
         Assert.True(res.Code == 0);
     }
