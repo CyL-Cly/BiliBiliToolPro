@@ -368,25 +368,15 @@ run_task() {
 
     if [ "$prefer_mode" == "dotnet" ]; then
         cd "$bilitool_repo_dir/src/Ray.BiliBiliTool.Console"
-        # 临时 props 文件压制编译告警，保持日志整洁，运行后删除
+        # 仓库根 props 文件压制编译告警，保持日志整洁。
+        # 注意：只创建、不删除。Directory.Build.props 属于 MSBuild 评估输入，
+        # 若每次运行前创建、结束后删除，下次运行时文件比构建产物新，
+        # 所有项目会被判定过期而全量重编译；常驻后仅首次编译，之后增量秒过。
         local props_file="$bilitool_repo_dir/Directory.Build.props"
-        local props_created=false
         if [ ! -f "$props_file" ]; then
             printf '<Project>\n  <PropertyGroup>\n    <NoWarn>$(NoWarn);NETSDK1188;CS9057;CS8618;CS9042;CS8625;CS8603;CS8602;CS8601;CS8600;CS8604</NoWarn>\n  </PropertyGroup>\n</Project>' >"$props_file"
-            props_created=true
-        elif grep -q 'NETSDK1188' "$props_file" 2>/dev/null; then
-            # 上次运行被中断遗留下来的本脚本生成的 props，认领并在运行后一并清理
-            props_created=true
         fi
-        # 记录 dotnet run 自身退出码，避免被后面的清理语句覆盖
-        local app_exit=0
-        dotnet run -v m -- --ENVIRONMENT=Production || app_exit=$?
-        # 注意不能写成 `[ "$props_created" = true ] && rm -f`：未创建时该复合命令返回1，
-        # 在 set -e 下会让任务明明成功、整个脚本却以退出码1结束（且残留文件永远清不掉）
-        if [ "$props_created" = true ]; then
-            rm -f "$props_file"
-        fi
-        return $app_exit
+        dotnet run -v m -- --ENVIRONMENT=Production
     else
         cd "$bilitool_repo_dir/bin"
         chmod +x ./Ray.BiliBiliTool.Console && ./Ray.BiliBiliTool.Console --ENVIRONMENT=Production

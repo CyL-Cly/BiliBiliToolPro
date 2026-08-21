@@ -1,6 +1,7 @@
 ## 4.0.0.7
 - GSD新增Bili账号管理页面
 - Feature: 新增呆呆面板（Daidai Panel）适配：扫码登录后通过面板原生 Open API 自动写回 Cookie，新增 daidai/ 部署脚本与订阅钩子
+- Fix: 呆呆面板 dotnet 模式下 Directory.Build.props 改为常驻，避免每次运行都全量重编译（首次编译后增量秒过）
 ## 4.0.0.6
 - GSD重构Web
 ## 4.0.0.5
