@@ -374,7 +374,7 @@ run_task() {
         # 所有项目会被判定过期而全量重编译；常驻后仅首次编译，之后增量秒过。
         local props_file="$bilitool_repo_dir/Directory.Build.props"
         if [ ! -f "$props_file" ]; then
-            printf '<Project>\n  <PropertyGroup>\n    <NoWarn>$(NoWarn);NETSDK1188;CS9057;CS8618;CS9042;CS8625;CS8603;CS8602;CS8601;CS8600;CS8604</NoWarn>\n  </PropertyGroup>\n</Project>' >"$props_file"
+            printf '<Project>\n  <PropertyGroup>\n    <NoWarn>$(NoWarn);NETSDK1188;RF001;CS9057;CS8618;CS9042;CS8625;CS8603;CS8602;CS8601;CS8600;CS8604</NoWarn>\n  </PropertyGroup>\n</Project>' >"$props_file"
         fi
         dotnet run -v m -- --ENVIRONMENT=Production
     else
