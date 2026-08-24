@@ -15,7 +15,7 @@ public static class Constants
     /// <summary>
     /// 开源地址
     /// </summary>
-    public static string SourceCodeUrl = "https://github.com/RayWangQvQ/BiliBiliToolPro";
+    public static string SourceCodeUrl = "https://github.com/CyL-Cly/BiliBiliToolPro";
 
     public static string FallbackAutoChargeUpId = "220893216";
 

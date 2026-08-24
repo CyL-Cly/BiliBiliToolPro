@@ -8,13 +8,13 @@ BiliTool
 
 </h1>
 
-[![GitHub Stars](https://img.shields.io/github/stars/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/network)
-[![GitHub Issues](https://img.shields.io/github/issues/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/issues)
-[![GitHub Contributors](https://img.shields.io/github/contributors/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/graphs/contributors)
-[![GitHub All Releases](https://img.shields.io/github/downloads/RayWangQvQ/BiliBiliToolPro/total?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/releases)
-[![GitHub Release (latest SemVer)](https://img.shields.io/github/v/release/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/releases)
-[![GitHub License](https://img.shields.io/github/license/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/RayWangQvQ/BiliBiliToolPro/blob/main/LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/network)
+[![GitHub Issues](https://img.shields.io/github/issues/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/issues)
+[![GitHub Contributors](https://img.shields.io/github/contributors/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/graphs/contributors)
+[![GitHub All Releases](https://img.shields.io/github/downloads/RayWangQvQ/BiliBiliToolPro/total?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/releases)
+[![GitHub Release (latest SemVer)](https://img.shields.io/github/v/release/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/releases)
+[![GitHub License](https://img.shields.io/github/license/RayWangQvQ/BiliBiliToolPro?style=flat-square)](https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/LICENSE)
 
 <a href="https://trendshift.io/repositories/3329" target="_blank">
     <img src="https://trendshift.io/api/badge/repositories/3329" alt="RayWangQvQ%2FBiliBiliToolPro | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
@@ -48,30 +48,30 @@ BiliTool
 <!-- TOC depthFrom:2 -->
 
 - [1. 如何使用](#1-如何使用)
-    - [1.1. 部署 BiliTool](#11-部署-bilitool)
-        - [1.1.1. 方案一：免费在线容器](#111-方案一免费在线容器)
-        - [1.1.2. 方式二：青龙](#112-方式二青龙)
-        - [1.1.3. 方式三：白虎面板](#113-方式三白虎面板)
-        - [1.1.4. 方式四：呆呆面板](#114-方式四呆呆面板)
-        - [1.1.5. 方式五：Docker 或 Podman 运行](#115-方式五docker-或-podman-运行)
-        - [1.1.6. 方式六：下载程序包到本地或服务器运行](#116-方式六下载程序包到本地或服务器运行)
-        - [1.1.7. 方式七：Chart部署](#117-方式七chart部署)
-    - [1.2. 消息推送（可选）](#12-消息推送可选)
+  - [1.1. 部署 BiliTool](#11-部署-bilitool)
+    - [1.1.1. 方案一：免费在线容器](#111-方案一免费在线容器)
+    - [1.1.2. 方式二：青龙](#112-方式二青龙)
+    - [1.1.3. 方式三：白虎面板](#113-方式三白虎面板)
+    - [1.1.4. 方式四：呆呆面板](#114-方式四呆呆面板)
+    - [1.1.5. 方式五：Docker 或 Podman 运行](#115-方式五docker-或-podman-运行)
+    - [1.1.6. 方式六：下载程序包到本地或服务器运行](#116-方式六下载程序包到本地或服务器运行)
+    - [1.1.7. 方式七：Chart部署](#117-方式七chart部署)
+  - [1.2. 消息推送（可选）](#12-消息推送可选)
 - [2. 功能任务说明](#2-功能任务说明)
 - [3. 个性化自定义配置](#3-个性化自定义配置)
 - [4. 多账号支持](#4-多账号支持)
 - [5. 常见问题](#5-常见问题)
 - [6. 版本发布及更新](#6-版本发布及更新)
 - [7. 成为开源贡献成员](#7-成为开源贡献成员)
-    - [7.1. 贡献代码](#71-贡献代码)
-    - [7.2. 贡献文档](#72-贡献文档)
+  - [7.1. 贡献代码](#71-贡献代码)
+  - [7.2. 贡献文档](#72-贡献文档)
 - [8. 捐赠支持](#8-捐赠支持)
 - [9. 其他](#9-其他)
 
 <!-- /TOC -->
 
 ---
-**Github 仓库地址：[RayWangQvQ/BiliBiliToolPro](https://github.com/RayWangQvQ/BiliBiliToolPro)**
+**Github 仓库地址：[RayWangQvQ/BiliBiliToolPro](https://github.com/CyL-Cly/BiliBiliToolPro)**
 
 **注意：**
 
@@ -195,9 +195,9 @@ BiliTool 实现自动完成任务的原理，是通过调用一系列开放的ap
 
 [>>点击查看常见问题文档](docs/questions.md)
 
-[Issues（议题）](https://github.com/RayWangQvQ/BiliBiliToolPro/issues)板块可以用来提交**Bug**和**建议**；
+[Issues（议题）](https://github.com/CyL-Cly/BiliBiliToolPro/issues)板块可以用来提交**Bug**和**建议**；
 
-[Discussions（讨论）](https://github.com/RayWangQvQ/BiliBiliToolPro/discussions)板块可以用来**提问**和**讨论**。
+[Discussions（讨论）](https://github.com/CyL-Cly/BiliBiliToolPro/discussions)板块可以用来**提问**和**讨论**。
 
 大部分问题其实都可以在文档、议题和讨论中找到答案。
 
@@ -212,7 +212,7 @@ BiliTool 实现自动完成任务的原理，是通过调用一系列开放的ap
 
 ## 6. 版本发布及更新
 
-当前正处于稳定的迭代开发中，详细待更新和计划内容可参见 [Projects](https://github.com/RayWangQvQ/BiliBiliToolPro/projects) 和 [Issues](https://github.com/RayWangQvQ/BiliBiliToolPro/issues) 。
+当前正处于稳定的迭代开发中，详细待更新和计划内容可参见 [Projects](https://github.com/CyL-Cly/BiliBiliToolPro/projects) 和 [Issues](https://github.com/CyL-Cly/BiliBiliToolPro/issues) 。
 
 想要有重要更新时收到通知的话，可以把仓库右上角的`Star`按钮点亮。
 

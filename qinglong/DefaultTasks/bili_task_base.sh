@@ -73,7 +73,7 @@ MemoryWarn=${MemoryWarn:-""}
 DiskWarn=${DiskWarn:-""}
 
 dir_repo=${dir_repo:-"$QL_DIR/data/repo"}
-# 需要兼容老版本青龙，https://github.com/RayWangQvQ/BiliBiliToolPro/issues/728
+# 需要兼容老版本青龙，https://github.com/CyL-Cly/BiliBiliToolPro/issues/728
 if [ ! -d "$dir_repo" ] && [ -d "$QL_DIR/repo" ]; then
   dir_repo="$QL_DIR/repo"
 fi
@@ -383,7 +383,7 @@ get_download_url() {
     eval $invocation
 
     tag=$1
-    url="${github_proxy}https://github.com/RayWangQvQ/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
+    url="${github_proxy}https://github.com/CyL-Cly/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
     say "下载地址：$url"
     echo $url
     return 0
@@ -436,14 +436,14 @@ install() {
             install_dotnet || {
                 say_err "安装失败"
                 say_err "请根据文档自行在青龙容器中安装dotnet：https://learn.microsoft.com/zh-cn/dotnet/core/install/linux-$current_linux_os"
-                say_err "或者尝试切换运行模式为bilitool，它不需要安装dotnet：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/qinglong/README.md"
+                say_err "或者尝试切换运行模式为bilitool，它不需要安装dotnet：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/qinglong/README.md"
             }
         fi
 
         if [ "$prefer_mode" == "bilitool" ]; then
             install_bilitool || {
                 say_err "安装失败，请检查日志并重试"
-                say_err "或者尝试切换运行模式为dotnet：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/qinglong/README.md"
+                say_err "或者尝试切换运行模式为dotnet：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/qinglong/README.md"
             }
         fi
     fi

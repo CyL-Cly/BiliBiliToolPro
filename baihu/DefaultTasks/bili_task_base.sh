@@ -350,7 +350,7 @@ get_download_url() {
     eval $invocation
 
     tag=$1
-    url="${github_proxy}https://github.com/RayWangQvQ/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
+    url="${github_proxy}https://github.com/CyL-Cly/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
     say "下载地址：$url"
     echo $url
     return 0
@@ -403,14 +403,14 @@ install() {
             install_dotnet || {
                 say_err "安装失败"
                 say_err "请根据文档自行在白虎面板环境中安装dotnet（进入“编程语言”页面安装）"
-                say_err "或者尝试切换运行模式为bilitool，它不需要安装dotnet：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/baihu/README.md"
+                say_err "或者尝试切换运行模式为bilitool，它不需要安装dotnet：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/baihu/README.md"
             }
         fi
 
         if [ "$prefer_mode" == "bilitool" ]; then
             install_bilitool || {
                 say_err "安装失败，请检查日志并重试"
-                say_err "或者尝试切换运行模式为dotnet：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/baihu/README.md"
+                say_err "或者尝试切换运行模式为dotnet：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/baihu/README.md"
             }
         fi
     fi

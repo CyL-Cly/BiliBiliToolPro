@@ -306,7 +306,7 @@ install_dotnet() {
 get_download_url() {
     eval $invocation
     tag=$1
-    url="${github_proxy}https://github.com/RayWangQvQ/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
+    url="${github_proxy}https://github.com/CyL-Cly/BiliBiliToolPro/releases/download/$tag/bilibili-tool-pro-v$tag-$current_os-$machine_architecture.zip"
     say "下载地址：$url"
     echo $url
     return 0
@@ -343,13 +343,13 @@ install() {
         if [ "$prefer_mode" == "dotnet" ]; then
             install_dotnet || {
                 say_err "安装失败，请根据文档自行在面板容器中安装dotnet，或切换为 bilitool 模式"
-                say_err "文档：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/daidai/README.md"
+                say_err "文档：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/daidai/README.md"
             }
         fi
         if [ "$prefer_mode" == "bilitool" ]; then
             install_bilitool || {
                 say_err "安装失败，请检查日志并重试，或切换为 dotnet 模式"
-                say_err "文档：https://github.com/RayWangQvQ/BiliBiliToolPro/blob/develop/daidai/README.md"
+                say_err "文档：https://github.com/CyL-Cly/BiliBiliToolPro/blob/main/daidai/README.md"
             }
         fi
     fi

@@ -2,9 +2,13 @@
 
 # 呆呆面板订阅「钩子脚本」：复用 qinglong 的各任务脚本，避免在 daidai 里重复维护。
 # 配置方式：在订阅的「钩子脚本」里填  bash daidai/copyshfile.sh
+#          且「白名单」必须包含 copyshfile——面板的白名单会同时限制实际检出的文件（sparse-checkout），
+#          不包含的话本脚本不会落盘，钩子会报 No such file or directory。
 # 运行时机：呆呆面板在“拉库之后、自动建任务之前”执行本钩子（CWD 即仓库目录）。
 #
 # 做的事：
+#   0. 若面板按白名单做了稀疏检出，先还原完整工作区（dotnet 模式要编译 src/ 源码、
+#      base 要靠根目录的 Ray.BiliBiliTool.sln 定位仓库根，都要求文件完整落盘）；
 #   1. 把 qinglong/DefaultTasks 下的 bili_task_*.sh（base 除外）拷到 daidai/DefaultTasks；
 #   2. 把 qinglong/DefaultTasks/dev 下的 bili_dev_task_*.sh（base 除外）拷到 daidai/DefaultTasks/dev；
 #   3. 删除 qinglong 目录，避免青龙版脚本（依赖 /ql 路径）被面板误登记成任务。
@@ -19,6 +23,19 @@ if [ -n "${SUB_DIR:-}" ]; then
 else
     CURRENT_FILE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     REPO_ROOT="$(dirname "$CURRENT_FILE_DIR")"
+fi
+
+# 面板按订阅白名单做了稀疏检出时（如日志里的 [sparse-checkout] 设置订阅路径过滤），
+# 工作区只有命中白名单的文件；这里还原完整工作区，保证 src/、Ray.BiliBiliTool.sln 等落盘。
+if [ -d "$REPO_ROOT/.git" ] && command -v git >/dev/null 2>&1; then
+    if [ "$(git -C "$REPO_ROOT" config core.sparseCheckout 2>/dev/null)" = "true" ]; then
+        echo ">>> 检测到稀疏检出（订阅白名单路径过滤），还原完整仓库文件 ..."
+        if ! git -C "$REPO_ROOT" sparse-checkout disable; then
+            # 旧版本 git 没有 sparse-checkout disable，手动关掉再重读索引
+            git -C "$REPO_ROOT" config core.sparseCheckout false
+            git -C "$REPO_ROOT" read-tree -mu HEAD
+        fi
+    fi
 fi
 
 SRC_ROOT="$REPO_ROOT/qinglong/DefaultTasks"

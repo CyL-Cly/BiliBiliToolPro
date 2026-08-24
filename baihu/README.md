@@ -12,13 +12,13 @@
 
 ```
 名称：拉取Bili库(不屏蔽dev)
-命令：baihu reposync --source-type git --source-url https://github.com/RayWangQvQ/BiliBiliToolPro.git --pre-command "bash baihu/copyshfile.sh"  --blacklist qinglong/DefaultTasks|.git --task-timeout 30 --task-langs '[{"name":"dotnet","version":"8.0"}]'
+命令：baihu reposync --source-type git --source-url https://github.com/CyL-Cly/BiliBiliToolPro.git --pre-command "bash baihu/copyshfile.sh"  --blacklist qinglong/DefaultTasks|.git --task-timeout 30 --task-langs '[{"name":"dotnet","version":"8.0"}]'
 定时规则：2 3 28 * *
 ```
 
 ```
 名称：拉取Bili库(屏蔽dev)
-命令：baihu reposync --source-type git --source-url https://github.com/RayWangQvQ/BiliBiliToolPro.git --pre-command "bash baihu/copyshfile.sh"  --blacklist qinglong/DefaultTasks|.git|baihu/DefaultTasks/dev --task-timeout 30 --task-langs '[{"name":"dotnet","version":"8.0"}]'
+命令：baihu reposync --source-type git --source-url https://github.com/CyL-Cly/BiliBiliToolPro.git --pre-command "bash baihu/copyshfile.sh"  --blacklist qinglong/DefaultTasks|.git|baihu/DefaultTasks/dev --task-timeout 30 --task-langs '[{"name":"dotnet","version":"8.0"}]'
 定时规则：2 3 28 * *
 ```
 
@@ -59,7 +59,7 @@
 
 如：
 ```
-https://gh-proxy.com/https://github.com/RayWangQvQ/BiliBiliToolPro.git
+https://gh-proxy.com/https://github.com/CyL-Cly/BiliBiliToolPro.git
 ```
 
 ## 3. 常见问题

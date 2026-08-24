@@ -152,7 +152,7 @@ docker run --rm \
 目前我提供和维护的镜像：
 
 - DockerHub: `[zai7lou/bili_tool_web](https://hub.docker.com/repository/docker/zai7lou/bili_tool_web)`
-- GitHub: `[bili_tool_web](https://github.com/RayWangQvQ/BiliBiliToolPro/pkgs/container/bili_tool_web)`
+- GitHub: `[bili_tool_web](https://github.com/CyL-Cly/BiliBiliToolPro/pkgs/container/bili_tool_web)`
 
 如果有需要（大部分都不需要），可以使用源码自己构建镜像，如下：
 

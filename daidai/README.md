@@ -85,20 +85,20 @@
 ```
 名称：Bilibili
 类型：Git 仓库（公开仓库）
-链接：https://github.com/RayWangQvQ/BiliBiliToolPro.git
-分支：develop
+链接：https://github.com/CyL-Cly/BiliBiliToolPro.git
+分支：main
 定时类型：crontab
 定时规则：2 2 28 * *
 钩子脚本：bash daidai/copyshfile.sh
-白名单：bili_task_
+白名单：bili_task_,copyshfile
 文件后缀：sh
 ```
 
 > - **钩子脚本填 `bash daidai/copyshfile.sh`**：呆呆面板会在“拉库之后、自动建任务之前”执行它，把青龙目录里的各任务脚本复用到 `daidai/DefaultTasks`，并清理 `qinglong` 目录。这是各任务脚本能复用、不重复维护的关键。
-> - **白名单填 `bili_task_`**：只把 `bili_task_*.sh` 登记成定时任务，不会把仓库里其他文件也建成任务。
+> - **白名单填 `bili_task_,copyshfile`**：只把 `bili_task_*.sh` 登记成定时任务，不会把仓库里其他文件也建成任务。注意白名单会**同时限制实际检出的文件**（面板会按白名单设置 sparse-checkout）：不包含 `copyshfile`，钩子脚本本身不会落盘，钩子会报 `No such file or directory`。钩子运行后会自己还原完整仓库文件（dotnet 模式需要 `src/` 源码）。
 > - **不要**限制「指定子目录」：钩子需要 `qinglong/` 源、`dotnet` 模式需要编译 `src/` 源码，都要求拉取完整仓库。
 > - 没提到的选项保持默认即可（自动添加任务、自动同步默认是开的）。
-> - 呆呆面板适配目前在 `develop`（先行版）分支，所以**分支填 `develop`**；等合并进 `main` 后可改回 `main`。
+> - 呆呆面板适配已在 `main` 分支，所以**分支填 `main`**。
 
 保存后点「运行」拉库。日志里会先看到 `[执行订阅钩子]`（同步脚本），再看到自动扫描 `# cron:` / `# new Env("...")` 并**自动创建 bilibili 定时任务**。
 
@@ -139,10 +139,10 @@
 
 ## 4. 先行版（dev）
 
-`develop` 分支的 `bili_dev_task_*.sh` 是开发中的新功能脚本。默认白名单 `bili_task_` 不会匹配它们；如果想体验先行版，把订阅白名单改成：
+`bili_dev_task_*.sh` 是开发中的新功能脚本（先行版）。默认白名单 `bili_task_` 不会匹配它们；如果想体验先行版，把订阅白名单改成：
 
 ```
-白名单：bili_task_,bili_dev_task_
+白名单：bili_task_,bili_dev_task_,copyshfile
 ```
 
 钩子脚本会一并把 `dev/bili_dev_task_*.sh` 复用过来，它们共用同一份 base（`dev/bili_dev_task_base.sh` 只是 source 了上一级的 `bili_task_base.sh`）。
@@ -152,7 +152,7 @@
 拉库 / 下载慢时，可在订阅链接前加加速代理，例如：
 
 ```
-https://gh-proxy.com/https://github.com/RayWangQvQ/BiliBiliToolPro.git
+https://gh-proxy.com/https://github.com/CyL-Cly/BiliBiliToolPro.git
 ```
 
 `bilitool` 模式下载二进制的加速，用环境变量 `BILI_GITHUB_PROXY`（如 `https://gh-proxy.com/`）。加速地址通常不稳定，请自行查找可用的。
@@ -194,8 +194,9 @@ https://gh-proxy.com/https://github.com/RayWangQvQ/BiliBiliToolPro.git
 
 去订阅的运行日志看：
 
+- 钩子报 `daidai/copyshfile.sh: No such file or directory` → 白名单会同时限制检出，钩子文件没落盘；把白名单改成 `bili_task_,copyshfile` 后重新拉取；
 - 是否有 `[执行订阅钩子]` 且同步了脚本 → 没有就检查「钩子脚本」是否填了 `bash daidai/copyshfile.sh`；
-- 「扫描脚本…识别出 N 个含 cron 的脚本」→ 为 0 就检查白名单是否写成了 `bili_task_`、文件后缀是否含 `sh`；
+- 「扫描脚本…识别出 N 个含 cron 的脚本」→ 为 0 就检查白名单是否写成了 `bili_task_,copyshfile`、文件后缀是否含 `sh`；
 - 一个文件都没扫到 → 多半是拉库失败。
 
 ### 6.6. `bili_task_base.sh: No such file or directory` / `run_task: command not found`
