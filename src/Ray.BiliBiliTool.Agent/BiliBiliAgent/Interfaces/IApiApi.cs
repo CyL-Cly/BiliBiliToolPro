@@ -139,21 +139,6 @@ public interface IApiApi
     #region 充电
 
     /// <summary>
-    /// 充电
-    /// </summary>
-    [Post(
-        "/x/ugcpay/trade/elec/pay/quick?elec_num={elec_num}&up_mid={up_mid}&otype=up&oid={oid}&csrf={csrf}"
-    )]
-    [Obsolete]
-    Task<BiliApiResponse<ChargeResponse>> Charge(
-        int elec_num,
-        string up_mid,
-        string oid,
-        string csrf,
-        [Header("Cookie")] string ck
-    );
-
-    /// <summary>
     /// 充电V2
     /// </summary>
     [Headers(
@@ -346,17 +331,6 @@ public interface IApiApi
     );
 
     /// <summary>
-    /// 签到任务（旧版）
-    /// </summary>
-    [Obsolete("Using Sign2Async instead.")]
-    [Headers("Referer: https://big.bilibili.com/mobile/bigPoint/task")]
-    [Post("/pgc/activity/score/task/sign")]
-    Task<BiliApiResponse> VipBigPointSignAsync(
-        [Body(BodySerializationMethod.UrlEncoded)] SignRequest request,
-        [Header("Cookie")] string ck
-    );
-
-    /// <summary>
     /// 签到任务（新版）
     /// </summary>
     [Headers("Referer: https://big.bilibili.com/mobile/index")]
@@ -364,14 +338,6 @@ public interface IApiApi
     Task<BiliApiResponse<Sign2Response>> Sign2Async(
         [Query] Sign2RequestPath requestPath,
         [Body] Sign2Request request,
-        [Header("Cookie")] string ck
-    );
-
-    [Obsolete]
-    [Headers("Referer: https://big.bilibili.com/mobile/bigPoint/task")]
-    [Post("/pgc/activity/score/task/receive")]
-    Task<BiliApiResponse> VipBigPointReceive(
-        [Body] ReceiveOrCompleteTaskRequest request,
         [Header("Cookie")] string ck
     );
 

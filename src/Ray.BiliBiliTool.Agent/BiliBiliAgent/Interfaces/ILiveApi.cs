@@ -21,30 +21,6 @@ public interface ILiveApi
     /// <summary>
     /// 银瓜子兑换硬币
     /// </summary>
-    /// <returns></returns>
-    [Headers(
-        "Referer: https://link.bilibili.com/",
-        "Origin: https://link.bilibili.com",
-        "Content-Type: application/x-www-form-urlencoded; charset=UTF-8"
-    )]
-    [Get("/pay/v1/Exchange/silver2coin")]
-    [Obsolete]
-    Task<BiliApiResponse> ExchangeSilver2Coin([Header("Cookie")] string ck);
-
-    /// <summary>
-    /// 获取银瓜子余额
-    /// </summary>
-    /// <returns></returns>
-    [Headers("Referer: https://link.bilibili.com/", "Origin: https://link.bilibili.com")]
-    [Get("/pay/v1/Exchange/getStatus")]
-    [Obsolete]
-    Task<BiliApiResponse<ExchangeSilverStatusResponse>> GetExchangeSilverStatus(
-        [Header("Cookie")] string ck
-    );
-
-    /// <summary>
-    /// 银瓜子兑换硬币
-    /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     //[Headers("Referer: https://link.bilibili.com/p/center/index?visit_id=1ddo4yl01q00")]

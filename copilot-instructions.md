@@ -4,7 +4,7 @@
 
 - This repository is a brownfield refactor project for the existing BiliBiliToolPro codebase.
 - The goal is to make the codebase safer to change through clearer boundaries, lower coupling, and stronger test coverage on critical flows.
-- Preserve existing Console, Web, scheduling, and integration behavior while refactoring.
+- Preserve existing Console, scheduling, and integration behavior while refactoring.
 
 ## Planning Artifacts
 

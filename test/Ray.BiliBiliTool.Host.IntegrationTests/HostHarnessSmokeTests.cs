@@ -17,12 +17,4 @@ public class HostHarnessSmokeTests
         host.Services.GetRequiredService<ILoginTaskAppService>().Should().NotBeNull();
         host.Services.GetRequiredService<IDailyTaskAppService>().Should().NotBeNull();
     }
-
-    [Fact]
-    public void Web_host_factory_can_be_constructed()
-    {
-        using var factory = new WebHostFactory();
-
-        factory.Should().NotBeNull();
-    }
 }

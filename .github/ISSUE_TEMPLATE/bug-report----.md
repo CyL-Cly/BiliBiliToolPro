@@ -40,8 +40,6 @@ BiliTool版本号：`x.x.x`
 
 ### 选择的BiliTool运行模式
 
-- [ ] docker
-- [ ] podman
 - [ ] 下载的Release包
 - [ ] 其他（请在下面补充）
 

@@ -24,29 +24,6 @@ namespace BiliAgentTest
         }
 
         [Fact]
-        [Obsolete]
-        public void GetExchangeSilverStatus_Normal_Success()
-        {
-            using var scope = Global.ServiceProviderRoot.CreateScope();
-            var api = scope.ServiceProvider.GetRequiredService<ILiveApi>();
-            var ck = scope.ServiceProvider.GetRequiredService<CookieStrFactory<BiliCookie>>();
-
-            BiliApiResponse<ExchangeSilverStatusResponse> re = api.GetExchangeSilverStatus(
-                null
-            ).Result;
-
-            if (ck.Count > 0)
-            {
-                Assert.True(re.Code == 0 && re.Message == "0");
-                Assert.True(re.Data.Silver >= 0);
-            }
-            else
-            {
-                Assert.False(re.Code != 0);
-            }
-        }
-
-        [Fact]
         public void Silver2Coin_Normal_Success()
         {
             using var scope = Global.ServiceProviderRoot.CreateScope();

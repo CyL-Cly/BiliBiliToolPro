@@ -6,8 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>3cc5407e-fe0e-4df6-a127-7385c75abd8a</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />
@@ -46,7 +44,6 @@
     <PackageReference Include="Ray.Serilog.Sinks.TelegramBatched" />
     <PackageReference Include="Ray.Serilog.Sinks.WorkWeiXinAppBatched" />
     <PackageReference Include="Ray.Serilog.Sinks.WorkWeiXinBatched" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ray.BiliBiliTool.Agent\Ray.BiliBiliTool.Agent.csproj" />

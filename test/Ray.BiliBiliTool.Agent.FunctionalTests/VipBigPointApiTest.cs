@@ -48,21 +48,6 @@ public class VipBigPointApiTest
     }
 
     [Fact]
-    public async Task SignAsync_Normal_Success()
-    {
-        // Arrange
-        var req = new SignRequest() { csrf = _ck.BiliJct };
-
-        // Act
-        BiliApiResponse re = await _api.VipBigPointSignAsync(req, null);
-        _output.WriteLine(re.ToJsonStr());
-
-        // Assert
-        re.Code.Should().Be(0);
-        re.Message.Should().BeEquivalentTo("success");
-    }
-
-    [Fact]
     public async Task GetVouchersInfoAsync_Normal_Success()
     {
         // Arrange

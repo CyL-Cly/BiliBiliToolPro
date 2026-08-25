@@ -17,11 +17,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Application.Contracts\Ray.BiliBiliTool.Application.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Console\Ray.BiliBiliTool.Console.csproj" />
-    <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Web\Ray.BiliBiliTool.Web.csproj" />
   </ItemGroup>
 </Project>

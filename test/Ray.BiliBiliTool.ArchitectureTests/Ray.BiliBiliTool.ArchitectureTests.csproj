@@ -25,7 +25,5 @@
     <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Domain\Ray.BiliBiliTool.Domain.csproj" />
     <ProjectReference Include="..\..\src\Ray.BiliBiliTool.DomainService\Ray.BiliBiliTool.DomainService.csproj" />
     <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Infrastructure\Ray.BiliBiliTool.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Infrastructure.EF\Ray.BiliBiliTool.Infrastructure.EF.csproj" />
-    <ProjectReference Include="..\..\src\Ray.BiliBiliTool.Web\Ray.BiliBiliTool.Web.csproj" />
   </ItemGroup>
 </Project>

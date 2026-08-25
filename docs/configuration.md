@@ -128,19 +128,6 @@ Ray.BiliBiliTool.Console -cookieStr=abc -numberOfCoins=5
 
 所有的配置项均可以通过添加环境变量来进行配置。如：
 
-Linux下运行Web：
-
-```bash
-# 添加环境变量作为配置：
-export RunTasks="Daily"
-export BiliBiliCookies__1="abc"
-export BiliBiliCookies__2="efg"
-export DailyTaskConfig__NumberOfCoins="3"
-
-# 开始运行程序：
-dotnet BiliBiliTool.Web.dll
-```
-
 Linux下运行Console：
 
 ```bash
@@ -797,7 +784,7 @@ BiliBiliTool 使用 Serilog 作为日志组件，所以可以参考 Serilog 的�
 <a id="markdown-393-定时任务相关" name="393-定时任务相关"></a>
 #### 3.9.3. 定时任务相关
 
-适用于 [方式四：docker容器化运行（推荐）](../docker/README.md)，用于配置定时任务。
+适用于容器化部署（如 [Chart 部署](../helm/README.md)），用于配置定时任务。
 
 <a id="markdown-394-定时任务" name="394-定时任务"></a>
 #### 3.9.4. 定时任务

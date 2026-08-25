@@ -1,15 +1,12 @@
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Quartz;
 using Ray.BiliBiliTool.Application.Contracts;
 using Ray.BiliBiliTool.Config.Options;
 using Ray.BiliBiliTool.Console;
-using Ray.BiliBiliTool.Web.Jobs;
 
 namespace Ray.BiliBiliTool.Host.IntegrationTests;
 
@@ -42,40 +39,6 @@ public class HostDelegationSafetyTests
 
         loginTask.CallCount.Should().Be(1);
         dailyTask.CallCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task Login_job_delegates_to_login_task_app_service()
-    {
-        var appService = new RecordingAppService();
-        var job = new LoginJob(NullLogger<LoginJob>.Instance, appService);
-
-        await InvokeJobDelegateAsync(job);
-
-        appService.CallCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task Daily_job_delegates_to_daily_task_app_service()
-    {
-        var appService = new RecordingAppService();
-        var job = new DailyJob(NullLogger<DailyJob>.Instance, appService);
-
-        await InvokeJobDelegateAsync(job);
-
-        appService.CallCount.Should().Be(1);
-    }
-
-    private static async Task InvokeJobDelegateAsync(object job)
-    {
-        var method = job.GetType()
-            .GetMethod("DoExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        method.Should().NotBeNull();
-
-        var task = (Task?)method!.Invoke(job, [null]);
-        task.Should().NotBeNull();
-        await task!;
     }
 
     private sealed class RecordingAppService : ILoginTaskAppService, IDailyTaskAppService

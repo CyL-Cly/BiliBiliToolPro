@@ -59,7 +59,6 @@ public class ChargeDomainService(
 
         var request = new ChargeRequest(couponBalance, long.Parse(targetUpId), ck.BiliJct);
 
-        //BiliApiResponse<ChargeResponse> response = await _chargeApi.Charge(decimal.ToInt32(couponBalance * 10), _dailyTaskOptions.AutoChargeUpId, _cookieOptions.UserId, _cookieOptions.BiliJct);
         BiliApiResponse<ChargeV2Response> response = await apiApi.ChargeV2Async(
             request,
             ck.ToString()
