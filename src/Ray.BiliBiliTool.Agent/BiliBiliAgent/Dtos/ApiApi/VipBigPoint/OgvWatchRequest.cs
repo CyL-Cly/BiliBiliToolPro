@@ -6,7 +6,8 @@ namespace Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint;
 /// 大会员赚积分「观看剧集内容」（ogvwatchnew）APP deliver 流程请求体构造
 /// </summary>
 /// <remarks>
-/// 流程：receive/v2 领取 → deliver/material/receive 开始观看 → deliver/task/complete 上报完成。
+/// 流程：receive/v2 领取 → deliver/material/receive 开始观看
+/// → heartbeat/mobile 观看上报 → deliver/task/complete 上报完成。
 /// 旧的 score/task/complete/v2 对该任务已返回 -400，必须走 deliver 接口。
 /// </remarks>
 public static class OgvWatchRequest
@@ -14,9 +15,9 @@ public static class OgvWatchRequest
     /// <summary>
     /// 默认剧集：《让子弹飞》
     /// </summary>
-    private const string SeasonId = "12548";
+    public const string SeasonId = "12548";
 
-    private const string EpId = "328482";
+    public const string EpId = "328482";
 
     /// <summary>
     /// 构造开始观看（deliver/material/receive）的请求体，返回该次观看的 task_id 与 token

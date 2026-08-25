@@ -214,6 +214,21 @@ public interface IApiApi
     );
 
     /// <summary>
+    /// 移动端播放心跳（观看历史 / 续播进度）
+    /// </summary>
+    [Headers(
+        "app-key: android64",
+        "env: prod",
+        "Content-Type: application/x-www-form-urlencoded; charset=utf-8"
+    )]
+    [Post("/x/report/heartbeat/mobile")]
+    Task<BiliApiResponse> UploadMobileHeartbeat(
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
+        [Header("Cookie")] string ck,
+        [Header("buvid")] string buvid
+    );
+
+    /// <summary>
     /// 为视频投币
     /// </summary>
     [Headers("Content-Type: application/x-www-form-urlencoded", "Origin: https://www.bilibili.com")]

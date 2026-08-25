@@ -264,11 +264,12 @@ public class VipBigPointDomainService(
     }
 
     /// <summary>
-    /// 完成观看剧集任务（APP deliver 流程：开始观看 → 上报完成）
+    /// 完成观看剧集任务（APP deliver 流程：开始观看 → 心跳上报 → 上报完成）
     /// </summary>
     /// <remarks>
     /// 旧的 score/task/complete/v2 对该任务已返回 -400，
-    /// 需先经 deliver/material/receive 获取 task_id 与 token，再经 deliver/task/complete 上报完成（只能成功一次）。
+    /// 需先经 deliver/material/receive 获取 task_id 与 token，
+    /// 再经 heartbeat/mobile 上报观看进度，最后经 deliver/task/complete 上报完成（只能成功一次）。
     /// </remarks>
     public async Task<bool> CompleteOgvWatchAsync(BiliCookie ck)
     {
@@ -295,6 +296,15 @@ public class VipBigPointDomainService(
         {
             logger.LogInformation("开始观看剧集任务失败：响应缺少 task_id/token");
             return false;
+        }
+
+        try
+        {
+            await ReportOgvWatchHeartbeatAsync(ck, watchCfg.milliseconds);
+        }
+        catch (Exception e)
+        {
+            logger.LogInformation("观看上报异常：{msg}", e.Message);
         }
 
         //上报完成
@@ -356,6 +366,83 @@ public class VipBigPointDomainService(
             );
     }
 
+    /// <summary>
+    /// 上报剧集观看心跳：开场一次 + 播放中一次。
+    /// 观看秒数优先用 deliver 返回的倒计时，至少 15 秒。
+    /// </summary>
+    private async Task ReportOgvWatchHeartbeatAsync(BiliCookie ck, long countdownMs)
+    {
+        if (
+            !long.TryParse(OgvWatchRequest.SeasonId, out long sid)
+            || !long.TryParse(OgvWatchRequest.EpId, out long epid)
+        )
+        {
+            logger.LogInformation("观看上报跳过：剧集 id 无效");
+            return;
+        }
+
+        var episode = await GetOgvWatchEpisodeAsync(sid, epid, ck);
+        if (episode is null)
+        {
+            logger.LogInformation("观看上报跳过：未能获取剧集信息");
+            return;
+        }
+
+        long aid = episode.aid;
+        epid = episode.ep_id;
+        int videoDuration =
+            episode.duration >= 10_000
+                ? episode.duration / 1000
+                : Math.Max(episode.duration, 15);
+        int watchSeconds = countdownMs > 0 ? (int)(countdownMs / 1000) : 15;
+        int playedTime = Math.Clamp(Math.Max(watchSeconds, 15), 1, videoDuration);
+        long startTs = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        string session = MobileHeartbeatRequest.NewSession();
+
+        logger.LogInformation("开始上报观看进度：{title}", episode.share_copy);
+
+        var opening = await apiApi.UploadMobileHeartbeat(
+            MobileHeartbeatRequest.BuildOpening(
+                ck,
+                aid,
+                episode.cid,
+                epid,
+                sid,
+                videoDuration,
+                session
+            ),
+            ck.ToString(),
+            ck.Buvid
+        );
+        if (opening.Code != 0)
+        {
+            logger.LogInformation("开场心跳失败：{msg}", opening.ToJsonStr());
+            return;
+        }
+
+        await Task.Delay(Math.Min(playedTime, 3) * 1000);
+
+        var playing = await apiApi.UploadMobileHeartbeat(
+            MobileHeartbeatRequest.BuildPlaying(
+                ck,
+                aid,
+                episode.cid,
+                epid,
+                sid,
+                videoDuration,
+                playedTime,
+                startTs,
+                session
+            ),
+            ck.ToString(),
+            ck.Buvid
+        );
+        if (playing.Code == 0)
+            logger.LogInformation("观看上报成功，已观看到第{playedTime}秒", playedTime);
+        else
+            logger.LogInformation("播放心跳失败：{msg}", playing.ToJsonStr());
+    }
+
     private async Task<bool> WatchBangumi(BiliCookie ck)
     {
         if (_vipBigPointOptions.ViewBangumiList.Count == 0)
@@ -404,6 +491,27 @@ public class VipBigPointDomainService(
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// 按 season + ep 取观看上报目标，优先匹配开始观看时使用的剧集
+    /// </summary>
+    private async Task<Episode?> GetOgvWatchEpisodeAsync(long sid, long epid, BiliCookie ck)
+    {
+        try
+        {
+            var bangumiInfo = await apiApi.GetBangumiBySsid(sid, ck.ToString());
+            if (bangumiInfo.Result.episodes.Count == 0)
+                return null;
+
+            return bangumiInfo.Result.episodes.FirstOrDefault(x => x.ep_id == epid)
+                ?? bangumiInfo.Result.episodes[0];
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return null;
+        }
     }
 
     /// <summary>
