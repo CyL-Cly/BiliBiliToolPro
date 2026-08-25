@@ -2,29 +2,30 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-REM git_push.bat [commit message]
-REM   无参数：把当前分支推到 origin
-REM   有参数：git add -A → commit → push
+REM Usage: git_push.bat
+REM Usage: git_push.bat your commit message
+REM No args: push current branch to origin
+REM With args: git add -A, commit, then push
 
 if not "%~1"=="" (
     git add -A
-    git commit -m "%~1"
+    git commit -m "%*"
     if errorlevel 1 (
-        echo [git_push] commit 失败或没有可提交的改动，继续尝试 push
+        echo git_push: commit failed or nothing to commit, still trying push
     )
 )
 
-git rev-parse --abbrev-ref HEAD >nul 2>&1
+git rev-parse --is-inside-work-tree >nul 2>&1
 if errorlevel 1 (
-    echo [git_push] 当前目录不是 git 仓库
+    echo git_push: not a git repository
     exit /b 1
 )
 
 git push -u origin HEAD
 if errorlevel 1 (
-    echo [git_push] push 失败
+    echo git_push: push failed
     exit /b 1
 )
 
-echo [git_push] 完成
+echo git_push: done
 endlocal
