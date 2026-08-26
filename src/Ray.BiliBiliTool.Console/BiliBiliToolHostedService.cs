@@ -26,6 +26,7 @@ public class BiliBiliToolHostedService(
     {
         try
         {
+            LogAppAndEnvironmentInfo();
             logger.LogInformation("BiliBiliToolPro 开始运行..." + Environment.NewLine);
 
             bool pass = await PreCheckAsync(cancellationToken);
@@ -45,14 +46,8 @@ public class BiliBiliToolHostedService(
         }
         finally
         {
-            LogAppInfo();
-
-            //环境
-            logger.LogInformation("运行环境：{env}", environment.EnvironmentName);
-            logger.LogInformation(
-                "应用目录：{path}" + Environment.NewLine,
-                environment.ContentRootPath
-            );
+            logger.LogInformation(Environment.NewLine + "========================");
+            LogAppAndEnvironmentInfo();
             logger.LogInformation("运行结束");
 
             //自动退出
@@ -140,14 +135,17 @@ public class BiliBiliToolHostedService(
         }
     }
 
-    private void LogAppInfo()
+    private void LogAppAndEnvironmentInfo()
     {
-        logger.LogInformation(Environment.NewLine + "========================");
         logger.LogInformation(
-            "v{version} 开源 by {url}",
+            "v{version} 开源 by {url}" + Environment.NewLine,
             typeof(Program).Assembly.GetName().Version?.ToString(),
-            Constants.SourceCodeUrl + Environment.NewLine
+            Constants.SourceCodeUrl
         );
-        //_logger.LogInformation("【当前IP】{ip} ", IpHelper.GetIp());
+        logger.LogInformation("运行环境：{env}", environment.EnvironmentName);
+        logger.LogInformation(
+            "应用目录：{path}" + Environment.NewLine,
+            environment.ContentRootPath
+        );
     }
 }
