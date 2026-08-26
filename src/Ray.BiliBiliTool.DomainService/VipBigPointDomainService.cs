@@ -250,7 +250,6 @@ public class VipBigPointDomainService(
 
     public async Task<bool> CompleteV2Async(string taskCode, BiliCookie ck)
     {
-        LogAccessKeyWarning(ck);
         var request = ScoreTaskV2Request.Build(taskCode, ck);
         var re = await apiApi.VipBigPointCompleteV2(request, ck.ToString(), ck.Buvid);
         if (re.Code == 0)
@@ -273,8 +272,6 @@ public class VipBigPointDomainService(
     /// </remarks>
     public async Task<bool> CompleteOgvWatchAsync(BiliCookie ck)
     {
-        LogAccessKeyWarning(ck);
-
         //开始观看任务
         var startRe = await apiApi.StartOgvWatchAsync(
             OgvWatchRequest.BuildStart(ck),
@@ -343,7 +340,6 @@ public class VipBigPointDomainService(
         BiliApiResponse? re = null;
         try
         {
-            LogAccessKeyWarning(ck);
             var request = ScoreTaskV2Request.Build(taskCode, ck);
             re = await apiApi.VipBigPointReceiveV2(request, ck.ToString(), ck.Buvid);
             if (re.Code == 0)
@@ -356,14 +352,6 @@ public class VipBigPointDomainService(
             logger.LogError("领取任务异常");
             logger.LogError(e.Message + re?.ToJsonStr());
         }
-    }
-
-    private void LogAccessKeyWarning(BiliCookie ck)
-    {
-        if (string.IsNullOrEmpty(ck.AccessKey))
-            logger.LogWarning(
-                "未在 cookie 中配置 access_key，赚积分任务领取/完成可能失败，建议在 cookie 字符串中追加 access_key=xxx"
-            );
     }
 
     /// <summary>

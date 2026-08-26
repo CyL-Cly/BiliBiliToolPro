@@ -16,7 +16,7 @@ public static class ScoreTaskV2Request
     /// 构造带 sign 的请求体
     /// </summary>
     /// <param name="taskCode">任务 code，如 ogvwatchnew、dress-view</param>
-    /// <param name="ck">账号 cookie（access_key 未配置时省略该参数）</param>
+    /// <param name="ck">账号 cookie</param>
     public static Dictionary<string, string> Build(string taskCode, BiliCookie ck)
     {
         string fingerprint = GetSha256Hex(ck.UserId);
@@ -64,9 +64,6 @@ public static class ScoreTaskV2Request
             ["ts"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
             ["utcOffset"] = "+08:00",
         };
-
-        if (!string.IsNullOrEmpty(ck.AccessKey))
-            parameters["access_key"] = ck.AccessKey;
 
         parameters["sign"] = AppSignHelper.CalcSign(parameters, AppSignHelper.AppSec);
 

@@ -41,7 +41,7 @@ public static class OgvWatchRequest
     /// </summary>
     /// <param name="taskId">开始观看返回的 task_id</param>
     /// <param name="token">开始观看返回的 token</param>
-    /// <param name="ck">账号 cookie（access_key 未配置时省略该参数）</param>
+    /// <param name="ck">账号 cookie</param>
     public static Dictionary<string, string> BuildComplete(long taskId, string token, BiliCookie ck)
     {
         var parameters = BuildCommon(ck);
@@ -75,9 +75,6 @@ public static class OgvWatchRequest
             ["statistics"] = "{\"appId\":1,\"platform\":3,\"version\":\"9.7.0\",\"abtest\":\"\"}",
             ["ts"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
         };
-
-        if (!string.IsNullOrEmpty(ck.AccessKey))
-            parameters["access_key"] = ck.AccessKey;
 
         return parameters;
     }
