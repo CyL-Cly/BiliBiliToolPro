@@ -1,3 +1,5 @@
+## 4.0.0.8
+- Fix: 移除大会员大积分任务请求中的 access_key 依赖与冗余警告
 ## 4.0.0.7
 - GSD新增Bili账号管理页面
 - Feature: 新增呆呆面板（Daidai Panel）适配：扫码登录后通过面板原生 Open API 自动写回 Cookie，新增 daidai/ 部署脚本与订阅钩子
