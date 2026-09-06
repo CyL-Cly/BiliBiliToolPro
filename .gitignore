@@ -379,3 +379,6 @@ bruno/.env
 
 # db
 src/**/BiliBiliTool.db*
+
+# deploy archives
+*.tar

@@ -44,7 +44,7 @@ public class VideoDomainService(
     {
         var apiResponse = await apiApi.GetRegionRankingVideosV2();
         logger.LogDebug("获取排行榜成功");
-        var data = apiResponse.Data.List[new Random().Next(apiResponse.Data.List.Count)];
+        var data = apiResponse.Data.List[Random.Shared.Next(apiResponse.Data.List.Count)];
         return data;
     }
 
@@ -57,7 +57,7 @@ public class VideoDomainService(
         {
             mid = upId,
             ps = 1,
-            pn = new Random().Next(1, total + 1),
+            pn = Random.Shared.Next(1, total + 1),
         };
 
         BiliApiResponse<SearchUpVideosResponse> re = await apiApi.SearchVideosByUpId(
@@ -148,7 +148,7 @@ public class VideoDomainService(
         //结束上报一次
         videoInfo.Duration = videoInfo.Duration ?? 15;
         int max = videoInfo.Duration < 15 ? videoInfo.Duration.Value : 15;
-        int playedTime = new Random().Next(1, max);
+        int playedTime = Random.Shared.Next(1, max);
 
         var request = new UploadVideoHeartbeatRequest
         {
@@ -300,7 +300,7 @@ public class VideoDomainService(
     /// <returns></returns>
     private async Task<VideoInfoDto?> GetRandomVideoOfUps(List<long> upIds, BiliCookie ck)
     {
-        long upId = upIds[new Random().Next(0, upIds.Count)];
+        long upId = upIds[Random.Shared.Next(0, upIds.Count)];
 
         if (upId == 0 || upId == long.MinValue)
             return null;

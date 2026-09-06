@@ -82,7 +82,7 @@ public class BiliBiliToolHostedService(
 
         if (_securityOptions.RandomSleepMaxMin > 0)
         {
-            int randomMin = new Random().Next(1, ++_securityOptions.RandomSleepMaxMin);
+            int randomMin = Random.Shared.Next(1, ++_securityOptions.RandomSleepMaxMin);
             logger.LogInformation("随机休眠{min}分钟" + Environment.NewLine, randomMin);
             await Task.Delay(randomMin * 1000 * 60, cancellationToken);
         }

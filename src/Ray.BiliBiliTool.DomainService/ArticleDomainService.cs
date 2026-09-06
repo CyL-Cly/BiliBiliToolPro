@@ -160,7 +160,7 @@ public class ArticleDomainService(
         {
             mid = mid,
             ps = 1,
-            pn = new Random().Next(1, articleCount + 1),
+            pn = Random.Shared.Next(1, articleCount + 1),
         };
 
         BiliApiResponse<SearchUpArticlesResponse> re = await apiApi.SearchUpArticlesByUpIdAsync(
@@ -203,7 +203,7 @@ public class ArticleDomainService(
         try
         {
             long randomUpId = _dailyTaskOptions.SupportUpIdList[
-                new Random().Next(0, _dailyTaskOptions.SupportUpIdList.Count)
+                Random.Shared.Next(0, _dailyTaskOptions.SupportUpIdList.Count)
             ];
 
             if (randomUpId is 0 or long.MinValue)

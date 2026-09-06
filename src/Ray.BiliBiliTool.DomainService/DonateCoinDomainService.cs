@@ -347,7 +347,7 @@ public class DonateCoinDomainService(
             for (int i = 1; i <= tryCount; i++)
             {
                 //获取随机Up主Id
-                long randomUpId = upIds[new Random().Next(0, upIds.Count)];
+                long randomUpId = upIds[Random.Shared.Next(0, upIds.Count)];
 
                 if (randomUpId == 0 || randomUpId == long.MinValue)
                     continue;

@@ -14,7 +14,7 @@ public class ShareVideoRequest
 
     public string Eab_x { get; set; } = "1";
 
-    public string Ramval { get; set; } = $"{new Random().Next(3, 20)}";
+    public string Ramval { get; set; } = $"{Random.Shared.Next(3, 20)}";
 
     public string Source { get; set; } = "web_normal";
 

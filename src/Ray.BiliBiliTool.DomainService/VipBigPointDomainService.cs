@@ -437,7 +437,7 @@ public class VipBigPointDomainService(
             return false;
 
         long randomSsid = _vipBigPointOptions.ViewBangumiList[
-            new Random().Next(0, _vipBigPointOptions.ViewBangumiList.Count)
+            Random.Shared.Next(0, _vipBigPointOptions.ViewBangumiList.Count)
         ];
 
         var res = await GetBangumi(randomSsid, ck);
@@ -449,7 +449,7 @@ public class VipBigPointDomainService(
         var videoInfo = res.Value.Item1;
 
         // 随机播放时间
-        int playedTime = new Random().Next(905, 1800);
+        int playedTime = Random.Shared.Next(905, 1800);
         // 观看该视频
         var request = new UploadVideoHeartbeatRequest()
         {
@@ -518,7 +518,7 @@ public class VipBigPointDomainService(
             // 从获取的剧集中随机获得其中的一集
 
             var bangumi = bangumiInfo.Result.episodes[
-                new Random().Next(0, bangumiInfo.Result.episodes.Count)
+                Random.Shared.Next(0, bangumiInfo.Result.episodes.Count)
             ];
             var videoInfo = new VideoInfoDto()
             {

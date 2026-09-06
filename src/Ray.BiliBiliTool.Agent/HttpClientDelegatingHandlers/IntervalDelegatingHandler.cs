@@ -41,7 +41,7 @@ public class IntervalDelegatingHandler(IOptionsMonitor<SecurityOptions> security
         else
         {
             int maxSeconds = securityOptions.CurrentValue.IntervalSecondsBetweenRequestApi;
-            seconds = new Random().Next(maxSeconds / 2, maxSeconds + 1);
+            seconds = Random.Shared.Next(maxSeconds / 2, maxSeconds + 1);
         }
 
         await Task.Delay(seconds * 1000, cancellationToken);

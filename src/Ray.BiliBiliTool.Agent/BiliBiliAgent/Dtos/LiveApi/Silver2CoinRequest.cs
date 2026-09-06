@@ -25,7 +25,7 @@ public class Silver2CoinRequest
 
     public static string GetRandomVisitId()
     {
-        var ran = new Random();
+        var ran = Random.Shared;
         int first = ran.Next(1, 10);
         int last = 0;
 

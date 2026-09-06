@@ -463,7 +463,7 @@ public class LiveDomainService(
                 else
                     successCount++;
 
-                var delay = new Random().Next(2000, 4000);
+                var delay = Random.Shared.Next(2000, 4000);
                 await Task.Delay(delay);
             }
 
@@ -639,7 +639,7 @@ public class LiveDomainService(
                 logger.LogError("【原因】{message}", result.Message);
             }
 
-            var delay = new Random().Next(5000, 8000);
+            var delay = Random.Shared.Next(5000, 8000);
             await Task.Delay(delay);
         }
     }

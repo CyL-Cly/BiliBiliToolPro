@@ -18,7 +18,7 @@ public class ChargeTaskOptions : BaseConfigOptions
     {
         get =>
             string.IsNullOrWhiteSpace(_chargeComment)
-                ? DefaultComments[new Random().Next(0, DefaultComments.Count)]
+                ? DefaultComments[Random.Shared.Next(0, DefaultComments.Count)]
                 : _chargeComment;
         set => _chargeComment = value;
     }
