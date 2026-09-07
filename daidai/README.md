@@ -75,6 +75,7 @@
 | `DaiDai_URL` | `http://127.0.0.1:5700` | 面板地址，**默认就是这个值**，一般不用填。只有改过面板端口、或在别的机器上跑 BiliBiliToolPro 时才需要填成面板实际可达地址（如 `http://192.168.1.10:5700`）。只要协议+主机+端口，不要带路径 |
 | `BILI_MODE` | `dotnet` 或 `bilitool` | 运行模式，默认 `dotnet`，见 [第 3 节](#3-运行模式dotnet-vs-bilitool) |
 | `BILI_GITHUB_PROXY` | 形如 `https://gh-proxy.com/` | 下载 bilitool 二进制时的 GitHub 加速前缀，仅 `bilitool` 模式用到 |
+| `BILI_SKIP_UPDATE` | `1` | 仅 `bilitool` 模式：不从 GitHub 覆盖已放好的本地二进制 |
 
 > 多账号：本工具支持多个 B 站账号，每个账号一条 `Ray_BiliBiliCookies__0`、`Ray_BiliBiliCookies__1`…… 的环境变量。**这些 Cookie 变量由登录任务自动创建/更新，你不用手动建**。
 
@@ -136,6 +137,7 @@
 
 - 想要**登录自动写回 Cookie 现在就能用** → 用默认的 `dotnet` 模式（拉本仓库源码编译）。
 - 面板资源紧张、不想装 dotnet，且能接受首次手动填一次 Cookie（或等新版本二进制） → 用 `bilitool` 模式。
+- 自己交叉编译后把 `Ray.BiliBiliTool.Console` 放到仓库根 `bin/`，设 `BILI_MODE=bilitool` 和 `BILI_SKIP_UPDATE=1`，任务会直接跑这份二进制，不会现场 `dotnet run`，也不会从 GitHub 覆盖。
 
 ## 4. 先行版（dev）
 

@@ -23,6 +23,7 @@ verbose=false                          # 开启debug日志
 bili_repo="raywangqvq/bilibilitoolpro" # 仓库地址（bilitool 模式下载 release 用）
 prefer_mode=${BILI_MODE:-"dotnet"}     # dotnet 或 bilitool，可通过面板环境变量 BILI_MODE 配置
 github_proxy=${BILI_GITHUB_PROXY:-""}  # 下载 github release 包时使用的代理，拼在地址前面
+skip_update=${BILI_SKIP_UPDATE:-"0"}   # 1 时不从 GitHub 覆盖已放好的本地二进制
 export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 # 解决 ICU 相关抽风问题
 
 invocation='say_verbose "Calling: ${yellow:-}${FUNCNAME[0]} ${green:-}$*${normal:-}"'
@@ -214,19 +215,19 @@ check_bilitool() {
     TAG_FILE="./tag.txt"
     touch $TAG_FILE
     local STORED_TAG=$(cat $TAG_FILE 2>/dev/null)
-    if [[ -z $STORED_TAG ]]; then
-        say "tag.txt为空，未安装过"
-        return 1
-    fi
-    say "tag.txt记录的版本：$STORED_TAG"
     if [ -f "./Ray.BiliBiliTool.Console" ]; then
+        if [[ -z $STORED_TAG ]]; then
+            say "检测到本地二进制（未记录版本）"
+            bilitool_installed_version="local"
+        else
+            say "tag.txt记录的版本：$STORED_TAG"
+            bilitool_installed_version=$STORED_TAG
+        fi
         say "bilitool已安装"
-        bilitool_installed_version=$STORED_TAG
         return 0
-    else
-        say "bilitool未安装"
-        return 1
     fi
+    say "bilitool未安装"
+    return 1
 }
 
 check_installed() {
@@ -315,6 +316,13 @@ get_download_url() {
 install_bilitool() {
     eval $invocation
     say "开始安装bilitool"
+    if [ "$skip_update" = "1" ] || [ "$skip_update" = "true" ]; then
+        if [ -f "./Ray.BiliBiliTool.Console" ]; then
+            say "BILI_SKIP_UPDATE=$skip_update，跳过从 GitHub 下载/覆盖本地二进制"
+            return 0
+        fi
+        say_warning "BILI_SKIP_UPDATE=$skip_update 但本地二进制不存在，仍尝试下载"
+    fi
     LATEST_RELEASE=$(curl -s https://api.github.com/repos/$bili_repo/releases/latest)
     check_jq
     LATEST_TAG=$(echo $LATEST_RELEASE | jq -r '.tag_name')
