@@ -99,7 +99,7 @@ public class MangaDomainService(
         if (response.Code == 0)
         {
             logger.LogInformation("【领取结果】成功");
-            logger.LogInformation($"【获取】{response.Data.Amount}张漫读劵");
+            logger.LogInformation($"【获取】{response.Data!.Amount}张漫读劵");
         }
         else
         {

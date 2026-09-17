@@ -9,6 +9,7 @@ namespace Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint;
 /// 流程：receive/v2 领取 → deliver/material/receive 开始观看
 /// → heartbeat/mobile 观看上报 → deliver/task/complete 上报完成。
 /// 旧的 score/task/complete/v2 对该任务已返回 -400，必须走 deliver 接口。
+/// 签名基串不含空值参数（见 AppSignHelper.BuildSortedQuery），deliver 接口不接受 activity_code 空串。
 /// </remarks>
 public static class OgvWatchRequest
 {
@@ -22,10 +23,9 @@ public static class OgvWatchRequest
     /// <summary>
     /// 构造开始观看（deliver/material/receive）的请求体，返回该次观看的 task_id 与 token
     /// </summary>
-    public static Dictionary<string, string> BuildStart(BiliCookie ck)
+    public static Dictionary<string, string> BuildStart()
     {
-        var parameters = BuildCommon(ck);
-        parameters["activity_code"] = "";
+        var parameters = BuildCommon();
         parameters["ep_id"] = EpId;
         parameters["from_spmid"] = "activity.h5.0.0";
         parameters["season_id"] = SeasonId;
@@ -41,10 +41,9 @@ public static class OgvWatchRequest
     /// </summary>
     /// <param name="taskId">开始观看返回的 task_id</param>
     /// <param name="token">开始观看返回的 token</param>
-    /// <param name="ck">账号 cookie</param>
-    public static Dictionary<string, string> BuildComplete(long taskId, string token, BiliCookie ck)
+    public static Dictionary<string, string> BuildComplete(long taskId, string token)
     {
-        var parameters = BuildCommon(ck);
+        var parameters = BuildCommon();
         parameters["task_id"] = taskId.ToString();
         parameters["timestamp"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
         parameters["token"] = token;
@@ -60,7 +59,7 @@ public static class OgvWatchRequest
     /// <summary>
     /// 按抓包还原的 APP 公共参数
     /// </summary>
-    private static Dictionary<string, string> BuildCommon(BiliCookie ck)
+    private static Dictionary<string, string> BuildCommon()
     {
         var parameters = new Dictionary<string, string>
         {

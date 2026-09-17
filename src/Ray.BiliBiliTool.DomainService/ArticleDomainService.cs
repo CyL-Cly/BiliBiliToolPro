@@ -172,7 +172,7 @@ public class ArticleDomainService(
             throw new BiliBusinessException(re.Message);
         }
 
-        var articleInfo = re.Data.Articles.FirstOrDefault();
+        var articleInfo = re.Data!.Articles.FirstOrDefault();
 
         logger.LogInformation("获取到的专栏{cvid}({title})", articleInfo?.Id, articleInfo?.Title);
 
@@ -245,7 +245,7 @@ public class ArticleDomainService(
             throw new BiliBusinessException(re.Message);
         }
 
-        return re.Data.Count;
+        return re.Data!.Count;
     }
 
     /// <summary>
@@ -347,7 +347,13 @@ public class ArticleDomainService(
 
             if (!_alreadyDonatedCoinCountCatch.TryGetValue(cvid.ToString(), out int multiply))
             {
-                multiply = (await apiApi.SearchArticleInfoAsync(cvid)).Data.Coin;
+                var data = (await apiApi.SearchArticleInfoAsync(cvid)).Data;
+                if (data is null)
+                {
+                    logger.LogWarning("获取专栏信息失败：{cvid}", cvid);
+                    return false;
+                }
+                multiply = data.Coin;
                 _alreadyDonatedCoinCountCatch.TryAdd(cvid.ToString(), multiply);
             }
 

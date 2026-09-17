@@ -93,6 +93,11 @@ public class LiveDomainService(
         BiliApiResponse<LiveWalletStatusResponse> queryStatus = await liveApi.GetLiveWalletStatus(
             ck.ToString()
         );
+        if (queryStatus.Data is null)
+        {
+            logger.LogError("【获取银瓜子余额】失败：{res}", queryStatus.ToJsonStr());
+            return false;
+        }
         logger.LogInformation("【银瓜子余额】 {silver}", queryStatus.Data.Silver);
         logger.LogInformation("【硬币余额】 {coin}", queryStatus.Data.Coin);
         logger.LogInformation("【今日剩余兑换次数】 {left}", queryStatus.Data.Silver_2_coin_left);
@@ -134,7 +139,13 @@ public class LiveDomainService(
         }
 
         //获取直播的分区
-        List<AreaDto> areaList = (await liveApi.GetAreaList(ck.ToString())).Data.Data;
+        var areaListRe = await liveApi.GetAreaList(ck.ToString());
+        if (areaListRe.Data is null)
+        {
+            logger.LogError("【获取直播分区】失败：{res}", areaListRe.ToJsonStr());
+            return;
+        }
+        List<AreaDto> areaList = areaListRe.Data.Data;
 
         //遍历分区
         int count = 0;
@@ -156,6 +167,8 @@ public class LiveDomainService(
                     wts = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 };
                 var reData = (await liveApi.GetList(request, ck.ToString())).Data;
+                if (reData is null)
+                    continue;
 
                 foreach (var item in reData.List)
                 {
@@ -198,7 +211,7 @@ public class LiveDomainService(
                 return;
             }
 
-            CheckTianXuanDto check = (
+            CheckTianXuanDto? check = (
                 await liveApi.CheckTianXuan(target.Roomid, ck.ToString())
             ).Data;
 
@@ -337,7 +350,7 @@ public class LiveDomainService(
             new GetFollowingsRequest(long.Parse(ck.UserId), FollowingsOrderType.TimeDesc),
             ck.ToString()
         );
-        return followings.Data.List.FirstOrDefault()?.Mid ?? 0;
+        return followings.Data?.List.FirstOrDefault()?.Mid ?? 0;
     }
 
     /// <summary>
@@ -353,6 +366,9 @@ public class LiveDomainService(
             new GetFollowingsRequest(long.Parse(ck.UserId), FollowingsOrderType.TimeDesc),
             ck.ToString()
         );
+
+        if (followings.Data is null)
+            return new List<ListItemDto>();
 
         foreach (UpInfoDto item in followings.Data.List)
         {
@@ -394,6 +410,10 @@ public class LiveDomainService(
                 new CreateTagRequest { Tag = "天选时刻", Csrf = ck.BiliJct },
                 ck.ToString()
             );
+            if (createRe.Data is null)
+            {
+                throw new BiliBusinessException(createRe.ToJsonStr());
+            }
             groupId = createRe.Data.Tagid;
             logger.LogInformation("创建成功");
         }
@@ -448,7 +468,7 @@ public class LiveDomainService(
                 var sendResult = await liveApi.SendLiveDanmuku(
                     new SendLiveDanmukuRequest(
                         ck.BiliJct,
-                        spaceInfo.Data.Live_room.Roomid,
+                        spaceInfo.Data!.Live_room.Roomid,
                         _liveFansMedalTaskOptions.DanmakuContent
                     ),
                     ck.ToString()
@@ -469,7 +489,7 @@ public class LiveDomainService(
 
             logger.LogInformation(
                 "【弹幕发送】发送情况：你向主播 {name} 发送弹幕{success}/{total}",
-                spaceInfo.Data.Name,
+                spaceInfo.Data!.Name,
                 successCount,
                 successCount + failedCount
             );
@@ -657,7 +677,7 @@ public class LiveDomainService(
         }
 
         var infoList = new List<FansMedalInfoDto>();
-        foreach (var medal in medalWallInfo.Data.List)
+        foreach (var medal in medalWallInfo.Data!.List)
         {
             logger.LogInformation("【主播】{name} ", medal.Target_name);
             if (_liveFansMedalTaskOptions.IsSkipLevel20Medal && medal.Medal_info.Level >= 20)
@@ -682,7 +702,7 @@ public class LiveDomainService(
             }
 
             // 用以排除有牌子无直播间的up主
-            if (spaceInfo.Data.Live_room is null)
+            if (spaceInfo.Data!.Live_room is null)
             {
                 logger.LogInformation("【主播】{name} 直播间id获取失败，已跳过", medal.Target_name);
                 continue;

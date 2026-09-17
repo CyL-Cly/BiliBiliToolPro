@@ -5,12 +5,15 @@ namespace Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint.ThreeDays
 
 public class ThreeDaySignResponse
 {
-    public required BigPointDto big_point { get; set; }
+    public BigPointDto? big_point { get; set; }
 
-    public required ThreeDaySignDto three_day_sign { get; set; }
+    public ThreeDaySignDto? three_day_sign { get; set; }
 
     public override string ToString()
     {
+        if (three_day_sign is null)
+            return "(签到响应缺少 three_day_sign)";
+
         var sb = new StringBuilder();
         sb.AppendLine($"今日获得签到积分: {three_day_sign.score}");
         sb.AppendLine($"累计签到: {three_day_sign.count}/{three_day_sign.duration} 天");
@@ -31,6 +34,11 @@ public class ThreeDaySignResponse
 
     public void LogPointInfo(ILogger logger)
     {
+        if (big_point is null)
+        {
+            logger.LogWarning("签到响应缺少 big_point");
+            return;
+        }
         logger.LogInformation("当前经验：{point}", big_point.point);
     }
 }

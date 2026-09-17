@@ -285,6 +285,8 @@ public class DonateCoinDomainService(
             request,
             ck.ToString()
         );
+        if (result.Data is null)
+            return null;
         if (result.Data.Total == 0)
             return null;
 
@@ -402,14 +404,19 @@ public class DonateCoinDomainService(
             //获取已投币数量
             if (!_alreadyDonatedCoinCountCatch.TryGetValue(aid, out int multiply))
             {
-                multiply = (
+                var data = (
                     await apiApi.GetDonatedCoinsForVideo(
                         new GetAlreadyDonatedCoinsRequest(long.Parse(aid)),
                         ck.ToString()
                     )
                 )
-                    .Data
-                    .Multiply;
+                    .Data;
+                if (data is null)
+                {
+                    logger.LogWarning("获取已投币信息失败：{aid}", aid);
+                    return false;
+                }
+                multiply = data.Multiply;
                 _alreadyDonatedCoinCountCatch.TryAdd(aid, multiply);
             }
 

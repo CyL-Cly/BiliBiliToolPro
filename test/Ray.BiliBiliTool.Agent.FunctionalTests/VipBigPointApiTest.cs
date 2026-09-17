@@ -44,7 +44,7 @@ public class VipBigPointApiTest
         // Assert
         re.Code.Should().Be(0);
         re.Data.Should().NotBeNull();
-        re.Data.Task_info.Modules.Should().HaveCountGreaterThan(0);
+        re.Data!.Task_info!.Modules.Should().HaveCountGreaterThan(0);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class VipBigPointApiTest
 
         // Assert
         re.Code.Should().Be(0);
-        re.Data.List.Should().Contain(x => x.Type == 9);
+        re.Data!.List.Should().Contain(x => x.Type == 9);
     }
 
     [Fact]

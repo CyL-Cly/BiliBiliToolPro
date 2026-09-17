@@ -1,5 +1,5 @@
 ::https://docs.microsoft.com/zh-cn/dotnet/core/tools/dotnet-publish
-::关闭回显
+::turn off command echo
 @echo off
 
 dotnet publish --configuration Release --self-contained false -o ./bin/Publish/net5-dependent

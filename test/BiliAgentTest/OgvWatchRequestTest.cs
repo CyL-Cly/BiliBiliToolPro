@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Ray.BiliBiliTool.Agent;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Utils;
 using Xunit;
@@ -8,25 +6,11 @@ namespace BiliAgentTest;
 
 public class OgvWatchRequestTest
 {
-    private static BiliCookie CreateCookie(bool withAccessKey = true)
-    {
-        var dic = new Dictionary<string, string>
-        {
-            ["DedeUserID"] = "123",
-            ["SESSDATA"] = "sess",
-            ["bili_jct"] = "jct",
-            ["buvid3"] = "buvid",
-        };
-        if (withAccessKey)
-            dic["access_key"] = "ak";
-        return new BiliCookie(dic);
-    }
-
     [Fact]
     public void BuildComplete_TaskSignAndSign_AreDoubleSignedConsistently()
     {
         // Arrange & Act
-        var parameters = OgvWatchRequest.BuildComplete(4320003, "a78ecb9553", CreateCookie());
+        var parameters = OgvWatchRequest.BuildComplete(4320003, "a78ecb9553");
 
         // Assert: task_sign = 排除 task_sign 与 sign 后签名一次
         var taskSign = parameters["task_sign"];
@@ -43,7 +27,7 @@ public class OgvWatchRequestTest
     [Fact]
     public void BuildComplete_FollowsCapturedParameterShape()
     {
-        var parameters = OgvWatchRequest.BuildComplete(4320003, "a78ecb9553", CreateCookie());
+        var parameters = OgvWatchRequest.BuildComplete(4320003, "a78ecb9553");
 
         Assert.Equal("4320003", parameters["task_id"]);
         Assert.Equal("a78ecb9553", parameters["token"]);
@@ -58,21 +42,12 @@ public class OgvWatchRequestTest
         );
         Assert.True(long.TryParse(parameters["timestamp"], out long tsMs) && tsMs > 0);
         Assert.True(long.TryParse(parameters["ts"], out long ts) && ts > 0);
-        Assert.Equal("ak", parameters["access_key"]);
-    }
-
-    [Fact]
-    public void BuildComplete_WithoutAccessKey_OmitsIt()
-    {
-        var parameters = OgvWatchRequest.BuildComplete(4320003, "a78ecb9553", CreateCookie(false));
-
-        Assert.False(parameters.ContainsKey("access_key"));
     }
 
     [Fact]
     public void BuildStart_ContainsEpisodeAndSelfConsistentSign()
     {
-        var parameters = OgvWatchRequest.BuildStart(CreateCookie());
+        var parameters = OgvWatchRequest.BuildStart();
 
         Assert.Equal("12548", parameters["season_id"]);
         Assert.Equal("328482", parameters["ep_id"]);

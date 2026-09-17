@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Ray.BiliBiliTool.Agent;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.Daily;
@@ -8,24 +7,19 @@ using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ApiApi.VipBigPoint.ThreeDaysSign;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos.ShowApi;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Interfaces;
-using Ray.BiliBiliTool.Config.Options;
 using Ray.BiliBiliTool.Domain.Exceptions;
-using Ray.BiliBiliTool.DomainService.Dtos;
 using Ray.BiliBiliTool.DomainService.Interfaces;
 
 namespace Ray.BiliBiliTool.DomainService;
 
 public class VipBigPointDomainService(
     ILogger<VipBigPointDomainService> logger,
-    IOptionsMonitor<VipBigPointOptions> vipBigPointOptions,
     IShowApi showApi,
     IApiApi apiApi,
     IAccountDomainService accountDomainService,
     IVideoDomainService videoDomainService
 ) : IVipBigPointDomainService
 {
-    private readonly VipBigPointOptions _vipBigPointOptions = vipBigPointOptions.CurrentValue;
-
     public async Task<VipBigPointCombine> GetCombineAsync(BiliCookie ck)
     {
         var allTasks = await apiApi.GetCombineAsync(
@@ -33,6 +27,8 @@ public class VipBigPointDomainService(
             ck.ToString()
         );
         if (allTasks.Code != 0)
+            throw new BiliBusinessException(allTasks.ToJsonStr());
+        if (allTasks.Data?.Task_info is null)
             throw new BiliBusinessException(allTasks.ToJsonStr());
         return allTasks.Data;
     }
@@ -45,7 +41,7 @@ public class VipBigPointDomainService(
         var re = await apiApi.GetVouchersInfoAsync(ck.ToString());
         if (re.Code == 0)
         {
-            var state = re.Data.List.Find(x => x.Type == 9)?.State;
+            var state = re.Data!.List.Find(x => x.Type == 9)?.State;
 
             switch (state)
             {
@@ -101,6 +97,12 @@ public class VipBigPointDomainService(
             new ThreeDaySignRequest { csrf = ck.BiliJct },
             ck.ToString()
         );
+        if (signInfo.Data?.three_day_sign is null)
+        {
+            logger.LogInformation("签到信息缺失：{msg}", signInfo.ToJsonStr());
+            return;
+        }
+
         if (signInfo.Data.three_day_sign.signed)
         {
             logger.LogInformation("已完成，跳过");
@@ -117,12 +119,17 @@ public class VipBigPointDomainService(
             throw new BiliBusinessException(re.ToJsonStr());
 
         logger.LogInformation("签到成功");
-        logger.LogInformation(re.Data.ToString());
+        logger.LogInformation(re.Data!.ToString());
 
         signInfo = await apiApi.GetThreeDaySignAsync(
             new ThreeDaySignRequest { csrf = ck.BiliJct },
             ck.ToString()
         );
+        if (signInfo.Data?.three_day_sign is null)
+        {
+            logger.LogInformation("签到信息缺失：{msg}", signInfo.ToJsonStr());
+            return;
+        }
         signInfo.Data.LogPointInfo(logger);
     }
 
@@ -135,10 +142,10 @@ public class VipBigPointDomainService(
     {
         const string moduleCode = "日常任务";
 
-        var module = combine.Task_info.Modules.FirstOrDefault(x => x.module_title == moduleCode);
+        var module = combine.Task_info?.Modules.FirstOrDefault(x => x.module_title == moduleCode);
         var missionsNeedReceive = module
             ?.common_task_item.Where(x => x.state == 0)
-            .Where(x => !PurchaseTaskCodes.Contains(x.task_code))
+            .Where(x => !PurchaseTaskCodes.Contains(x.task_code ?? ""))
             .ToList();
         if (missionsNeedReceive == null || missionsNeedReceive.Count == 0)
         {
@@ -148,6 +155,11 @@ public class VipBigPointDomainService(
 
         foreach (var targetTask in missionsNeedReceive)
         {
+            if (string.IsNullOrEmpty(targetTask.task_code))
+            {
+                logger.LogWarning("任务缺少 task_code，跳过");
+                continue;
+            }
             logger.LogInformation("开始领取任务：{task}", targetTask.title);
             await TryReceive(targetTask.task_code, ck);
         }
@@ -161,7 +173,7 @@ public class VipBigPointDomainService(
         Func<string, BiliCookie, Task<bool>> completeFunc
     )
     {
-        var module = info.Task_info.Modules.FirstOrDefault(x => x.module_title == moduleCode);
+        var module = info.Task_info?.Modules.FirstOrDefault(x => x.module_title == moduleCode);
         var bonusTask = module?.common_task_item.FirstOrDefault(x => x.task_code == taskCode);
 
         if (bonusTask == null)
@@ -179,7 +191,7 @@ public class VipBigPointDomainService(
         if (bonusTask.state == 0)
         {
             logger.LogInformation("开始领取任务");
-            await TryReceive(bonusTask.task_code, ck);
+            await TryReceive(taskCode, ck);
         }
 
         logger.LogInformation("开始完成任务");
@@ -189,7 +201,7 @@ public class VipBigPointDomainService(
         if (re)
         {
             var combine = await GetCombineAsync(ck);
-            module = combine.Task_info.Modules.FirstOrDefault(x => x.module_title == moduleCode);
+            module = combine.Task_info?.Modules.FirstOrDefault(x => x.module_title == moduleCode);
             bonusTask = module?.common_task_item.FirstOrDefault(x => x.task_code == taskCode);
             var success = bonusTask is { state: 3, complete_times: >= 1 };
             logger.LogInformation("确认：{re}", success ? "成功，经验 +10" : "失败");
@@ -274,7 +286,7 @@ public class VipBigPointDomainService(
     {
         //开始观看任务
         var startRe = await apiApi.StartOgvWatchAsync(
-            OgvWatchRequest.BuildStart(ck),
+            OgvWatchRequest.BuildStart(),
             ck.ToString(),
             ck.Buvid
         );
@@ -291,13 +303,28 @@ public class VipBigPointDomainService(
             || string.IsNullOrEmpty(watchCfg.token)
         )
         {
-            logger.LogInformation("开始观看剧集任务失败：响应缺少 task_id/token");
+            logger.LogInformation(
+                "开始观看剧集任务失败：响应缺少 task_id/token：{msg}",
+                startRe.ToJsonStr()
+            );
             return false;
+        }
+
+        long countdownMs = watchCfg.milliseconds;
+        if (countdownMs <= 0)
+        {
+            logger.LogInformation(
+                "观看倒计时配置无效（milliseconds={ms}），按保守值 600 秒推进",
+                countdownMs
+            );
+            countdownMs = 600_000;
         }
 
         try
         {
-            await ReportOgvWatchHeartbeatAsync(ck, watchCfg.milliseconds);
+            var watched = await ReportOgvWatchHeartbeatAsync(ck, countdownMs);
+            if (!watched)
+                logger.LogInformation("观看心跳未完整推进，仍尝试上报完成");
         }
         catch (Exception e)
         {
@@ -306,18 +333,41 @@ public class VipBigPointDomainService(
 
         //上报完成
         var re = await apiApi.CompleteOgvWatchAsync(
-            OgvWatchRequest.BuildComplete(taskId, watchCfg.token, ck),
+            OgvWatchRequest.BuildComplete(taskId, watchCfg.token),
             ck.ToString(),
             ck.Buvid
         );
-        if (re.Code == 0)
+        bool completeOk = re.Code == 0;
+        if (completeOk)
         {
             logger.LogInformation("已完成");
-            return true;
+        }
+        else
+        {
+            logger.LogInformation("失败：{msg}", re.ToJsonStr());
         }
 
-        logger.LogInformation("失败：{msg}", re.ToJsonStr());
-        return false;
+        //复核：以 combine 中 ogvwatchnew 的实际状态为准
+        try
+        {
+            var combine = await GetCombineAsync(ck);
+            var state = combine
+                .Task_info?.Modules.SelectMany(x => x.common_task_item)
+                .FirstOrDefault(x => x.task_code == "ogvwatchnew")
+                ?.state;
+            if (state is null)
+            {
+                logger.LogInformation("复核：未找到 ogvwatchnew 任务");
+                return completeOk;
+            }
+            logger.LogInformation("复核：ogvwatchnew.state={state}", state);
+            return state == 3;
+        }
+        catch (Exception e)
+        {
+            logger.LogInformation("复核异常：{msg}", e.Message);
+            return completeOk;
+        }
     }
 
     #region private
@@ -355,10 +405,11 @@ public class VipBigPointDomainService(
     }
 
     /// <summary>
-    /// 上报剧集观看心跳：开场一次 + 播放中一次。
-    /// 观看秒数优先用 deliver 返回的倒计时，至少 15 秒。
+    /// 上报剧集观看心跳：开场一次 + 播放中每 60 秒一步，直到累计观看达到目标时长 + 30 秒缓冲。
+    /// 目标秒数优先用 deliver 返回的倒计时，不足 15 秒按 15 秒。
     /// </summary>
-    private async Task ReportOgvWatchHeartbeatAsync(BiliCookie ck, long countdownMs)
+    /// <returns>是否完整推进到目标观看时长</returns>
+    private async Task<bool> ReportOgvWatchHeartbeatAsync(BiliCookie ck, long countdownMs)
     {
         if (
             !long.TryParse(OgvWatchRequest.SeasonId, out long sid)
@@ -366,25 +417,31 @@ public class VipBigPointDomainService(
         )
         {
             logger.LogInformation("观看上报跳过：剧集 id 无效");
-            return;
+            return false;
         }
 
         var episode = await GetOgvWatchEpisodeAsync(sid, epid, ck);
         if (episode is null)
         {
             logger.LogInformation("观看上报跳过：未能获取剧集信息");
-            return;
+            return false;
         }
 
         long aid = episode.aid;
         epid = episode.ep_id;
+        //接口返回毫秒（实测 season 接口 duration=7914625 对应约 7914 秒）；兼容旧的秒级数据：秒值不可能 >= 10000
         int videoDuration =
-            episode.duration >= 10_000
-                ? episode.duration / 1000
-                : Math.Max(episode.duration, 15);
-        int watchSeconds = countdownMs > 0 ? (int)(countdownMs / 1000) : 15;
-        int playedTime = Math.Clamp(Math.Max(watchSeconds, 15), 1, videoDuration);
-        long startTs = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            episode.duration >= 10_000 ? episode.duration / 1000 : Math.Max(episode.duration, 15);
+        int target = Math.Max((int)(countdownMs / 1000), 15);
+        if (videoDuration < target + 30)
+        {
+            logger.LogInformation(
+                "观看上报跳过：该集时长 {videoDuration} 秒不足目标 {target} 秒 + 30 秒缓冲",
+                videoDuration,
+                target
+            );
+            return false;
+        }
         string session = MobileHeartbeatRequest.NewSession();
 
         logger.LogInformation("开始上报观看进度：{title}", episode.share_copy);
@@ -405,80 +462,40 @@ public class VipBigPointDomainService(
         if (opening.Code != 0)
         {
             logger.LogInformation("开场心跳失败：{msg}", opening.ToJsonStr());
-            return;
-        }
-
-        await Task.Delay(Math.Min(playedTime, 3) * 1000);
-
-        var playing = await apiApi.UploadMobileHeartbeat(
-            MobileHeartbeatRequest.BuildPlaying(
-                ck,
-                aid,
-                episode.cid,
-                epid,
-                sid,
-                videoDuration,
-                playedTime,
-                startTs,
-                session
-            ),
-            ck.ToString(),
-            ck.Buvid
-        );
-        if (playing.Code == 0)
-            logger.LogInformation("观看上报成功，已观看到第{playedTime}秒", playedTime);
-        else
-            logger.LogInformation("播放心跳失败：{msg}", playing.ToJsonStr());
-    }
-
-    private async Task<bool> WatchBangumi(BiliCookie ck)
-    {
-        if (_vipBigPointOptions.ViewBangumiList.Count == 0)
-            return false;
-
-        long randomSsid = _vipBigPointOptions.ViewBangumiList[
-            Random.Shared.Next(0, _vipBigPointOptions.ViewBangumiList.Count)
-        ];
-
-        var res = await GetBangumi(randomSsid, ck);
-        if (res is null)
-        {
             return false;
         }
 
-        var videoInfo = res.Value.Item1;
+        long startTs = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        // 随机播放时间
-        int playedTime = Random.Shared.Next(905, 1800);
-        // 观看该视频
-        var request = new UploadVideoHeartbeatRequest()
+        //播放中：每 60 秒一步心跳，累计观看达到 target + 30 秒缓冲后结束
+        int elapsed = 0;
+        while (true)
         {
-            Aid = long.Parse(videoInfo.Aid),
-            Bvid = videoInfo.Bvid,
-            Cid = videoInfo.Cid,
-            Mid = long.Parse(ck.UserId),
-            Sid = randomSsid,
-            Epid = res.Value.Item2,
-            Csrf = ck.BiliJct,
-            Type = 4,
-            Sub_type = 1,
-            Start_ts = DateTime.Now.ToTimeStamp() - playedTime,
-            Played_time = playedTime,
-            Realtime = playedTime,
-            Real_played_time = playedTime,
-        };
-        BiliApiResponse apiResponse = await apiApi.UploadVideoHeartbeat(
-            request.Aid,
-            request.Played_time,
-            request,
-            ck.ToString()
-        );
-        if (apiResponse.Code == 0)
-        {
-            return true;
+            await Task.Delay(60_000);
+            elapsed += 60;
+
+            var playing = await apiApi.UploadMobileHeartbeat(
+                MobileHeartbeatRequest.BuildPlaying(
+                    ck,
+                    aid,
+                    episode.cid,
+                    epid,
+                    sid,
+                    videoDuration,
+                    elapsed,
+                    startTs,
+                    session
+                ),
+                ck.ToString(),
+                ck.Buvid
+            );
+            logger.LogInformation("已连续观看 {elapsed}/{target} 秒", elapsed, target);
+            if (playing.Code != 0)
+                logger.LogInformation("播放心跳失败：{msg}", playing.ToJsonStr());
+
+            if (elapsed >= target + 30)
+                return true;
         }
-
-        return false;
     }
 
     /// <summary>
@@ -492,52 +509,19 @@ public class VipBigPointDomainService(
             if (bangumiInfo.Result.episodes.Count == 0)
                 return null;
 
-            return bangumiInfo.Result.episodes.FirstOrDefault(x => x.ep_id == epid)
-                ?? bangumiInfo.Result.episodes[0];
+            var ep = bangumiInfo.Result.episodes.FirstOrDefault(x => x.ep_id == epid);
+            if (ep is null)
+            {
+                ep = bangumiInfo.Result.episodes[0];
+                logger.LogInformation("目标 ep 未找到，回退到第一集：{ep}", ep.ep_id);
+            }
+            return ep;
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError(e, "获取剧集信息失败");
             return null;
         }
-    }
-
-    /// <summary>
-    /// 从自定义的番剧ssid中选择其中的一部中的一集
-    /// </summary>
-    /// <param name="randomSsid">番剧ssid</param>
-    /// <returns></returns>
-    private async Task<(VideoInfoDto, long)?> GetBangumi(long randomSsid, BiliCookie ck)
-    {
-        try
-        {
-            if (randomSsid is 0 or long.MinValue)
-                return null;
-            var bangumiInfo = await apiApi.GetBangumiBySsid(randomSsid, ck.ToString());
-
-            // 从获取的剧集中随机获得其中的一集
-
-            var bangumi = bangumiInfo.Result.episodes[
-                Random.Shared.Next(0, bangumiInfo.Result.episodes.Count)
-            ];
-            var videoInfo = new VideoInfoDto()
-            {
-                Bvid = bangumi.bvid,
-                Aid = bangumi.aid.ToString(),
-                Cid = bangumi.cid,
-                Copyright = 1,
-                Duration = bangumi.duration,
-                Title = bangumi.share_copy,
-            };
-            logger.LogInformation("本次播放的正片为：{title}", bangumi.share_copy);
-            return (videoInfo, bangumi.ep_id);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e.Message);
-        }
-
-        return null;
     }
 
     #endregion

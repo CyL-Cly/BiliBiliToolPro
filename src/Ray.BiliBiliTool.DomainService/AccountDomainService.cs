@@ -79,12 +79,12 @@ public class AccountDomainService(
         if (apiResponse.Code == 0)
         {
             logger.LogDebug("请求本日任务完成状态成功");
-            result = apiResponse.Data;
+            result = apiResponse.Data!;
         }
         else
         {
             logger.LogWarning("获取今日任务完成状态失败：{result}", apiResponse.ToJsonStr());
-            result = (await apiApi.GetDailyTaskRewardInfoAsync(ck.ToString())).Data;
+            result = (await apiApi.GetDailyTaskRewardInfoAsync(ck.ToString())).Data!;
             //todo:偶发性请求失败，再请求一次，这么写很丑陋，待用polly再框架层面实现
         }
 
@@ -131,7 +131,7 @@ public class AccountDomainService(
         {
             Pn = totalPage,
         };
-        List<UpInfoDto> followings = (await apiApi.GetFollowingsByTag(req, ck.ToString())).Data;
+        List<UpInfoDto> followings = (await apiApi.GetFollowingsByTag(req, ck.ToString())).Data!;
         followings.Reverse();
 
         var targetList = new List<UpInfoDto>();
@@ -152,7 +152,7 @@ public class AccountDomainService(
                 if (pn <= 0)
                     break;
                 req.Pn = pn;
-                followings = (await apiApi.GetFollowingsByTag(req, ck.ToString())).Data;
+                followings = (await apiApi.GetFollowingsByTag(req, ck.ToString())).Data!;
                 followings.Reverse();
             }
         }

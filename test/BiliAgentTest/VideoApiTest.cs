@@ -31,7 +31,7 @@ public class VideoApiTest
 
         if (ck.Count > 0)
         {
-            Assert.True(re.Code == 0 && re.Data.Multiply >= 0);
+            Assert.True(re.Code == 0 && re.Data!.Multiply >= 0);
         }
         else
         {

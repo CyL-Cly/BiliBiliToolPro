@@ -38,7 +38,7 @@ namespace BiliAgentTest
 
             if (re.Code == 0)
             {
-                Assert.True(re.Data.Coin == 1);
+                Assert.True(re.Data!.Coin == 1);
             }
             else
             {
@@ -58,7 +58,7 @@ namespace BiliAgentTest
 
             if (ck.Count > 0)
             {
-                Assert.True(re.Code == 0 && re.Data.Silver_2_coin_left >= 0);
+                Assert.True(re.Code == 0 && re.Data!.Silver_2_coin_left >= 0);
             }
             else
             {
@@ -76,7 +76,7 @@ namespace BiliAgentTest
 
             BiliApiResponse<MedalWallResponse> re = api.GetMedalWall("919174", null).Result;
 
-            Assert.NotEmpty(re.Data.List);
+            Assert.NotEmpty(re.Data!.List);
 
             var md = re.Data.List[0];
             Assert.NotNull(md);

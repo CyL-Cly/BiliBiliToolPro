@@ -397,7 +397,11 @@ public interface IApiApi
     /// <summary>
     /// 开始观看剧集任务，返回该次观看的 task_id 与 token
     /// </summary>
-    [Headers("app-key: android64", "env: prod")]
+    [Headers(
+        "Content-Type: application/x-www-form-urlencoded",
+        "app-key: android64",
+        "env: prod"
+    )]
     [Post("/pgc/activity/deliver/material/receive")]
     Task<BiliApiResponse<StartOgvWatchResponse>> StartOgvWatchAsync(
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,
@@ -408,7 +412,11 @@ public interface IApiApi
     /// <summary>
     /// 上报完成观看剧集任务（只能成功一次，重复调用返回 -400）
     /// </summary>
-    [Headers("app-key: android64", "env: prod")]
+    [Headers(
+        "Content-Type: application/x-www-form-urlencoded",
+        "app-key: android64",
+        "env: prod"
+    )]
     [Post("/pgc/activity/deliver/task/complete")]
     Task<BiliApiResponse> CompleteOgvWatchAsync(
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, string> request,

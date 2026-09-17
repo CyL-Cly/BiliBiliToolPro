@@ -43,6 +43,10 @@ public class VideoDomainService(
     public async Task<RankingInfo> GetRandomVideoOfRanking()
     {
         var apiResponse = await apiApi.GetRegionRankingVideosV2();
+        if (apiResponse.Data is null)
+        {
+            throw new BiliBusinessException(apiResponse.ToJsonStr());
+        }
         logger.LogDebug("获取排行榜成功");
         var data = apiResponse.Data.List[Random.Shared.Next(apiResponse.Data.List.Count)];
         return data;
@@ -67,7 +71,7 @@ public class VideoDomainService(
 
         if (re.Code != 0)
         {
-            throw new BiliBusinessException(re.Message);
+            throw new BiliBusinessException(re.Message!);
         }
 
         return re.Data?.List?.Vlist.FirstOrDefault();
@@ -88,7 +92,7 @@ public class VideoDomainService(
         );
         if (re.Code != 0)
         {
-            throw new BiliBusinessException(re.Message);
+            throw new BiliBusinessException(re.Message!);
         }
 
         return re.Data!.Page.Count;
@@ -283,6 +287,8 @@ public class VideoDomainService(
             request,
             ck.ToString()
         );
+        if (result.Data is null)
+            return null;
         if (result.Data.Total > 0)
         {
             var video = await GetRandomVideoOfUps(result.Data.List.Select(x => x.Mid).ToList(), ck);

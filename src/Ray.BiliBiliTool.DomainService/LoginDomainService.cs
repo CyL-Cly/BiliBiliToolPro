@@ -50,7 +50,7 @@ public class LoginDomainService(
             throw new BiliBusinessException($"获取二维码失败：{re.ToJsonStr()}");
         }
 
-        var url = re.Data.Url;
+        var url = re.Data!.Url;
         GenerateQrCode(url);
 
         var online = GetOnlinePic(url);
@@ -77,7 +77,7 @@ public class LoginDomainService(
 
             var contentStr = await check.Content.ReadAsStringAsync(cancellationToken);
             var content = JsonConvert.DeserializeObject<BiliApiResponse<TokenDto>>(contentStr);
-            if (content?.Code != 0)
+            if (content?.Code != 0 || content.Data is null)
             {
                 logger.LogWarning("调用检测接口异常：{msg}", check.ToJsonStr());
                 break;
@@ -327,7 +327,7 @@ public class LoginDomainService(
             throw new BiliBusinessException($"获取二维码失败：{re.ToJsonStr()}");
         }
 
-        var url = re.Data.Url;
+        var url = re.Data!.Url;
 
         // Generate PNG QR code (no console output, per D-01)
         var qrGenerator = new QRCodeGenerator();
@@ -363,7 +363,7 @@ public class LoginDomainService(
 
         var contentStr = await check.Content.ReadAsStringAsync(cancellationToken);
         var content = JsonConvert.DeserializeObject<BiliApiResponse<TokenDto>>(contentStr);
-        if (content?.Code != 0)
+        if (content?.Code != 0 || content.Data is null)
         {
             return new QrLoginCheckResult
             {

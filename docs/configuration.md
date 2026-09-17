@@ -463,11 +463,7 @@ Console项目（青龙）的环境变量需要添加`Ray_`前缀，其他不用�
 <a id="markdown-361-自定义观看番剧" name="361-自定义观看番剧"></a>
 #### 3.6.1. 自定义观看番剧
 
-|   TITLE   | CONTENT   |
-| ---------- | -------------- |
-| 配置Key | `VipBigPointConfig__ViewBangumis` |
-| 值域   | 番剧的ssid（season_id） |
-| 默认值   | `33378`（名侦探柯南） |
+该配置（`VipBigPointConfig__ViewBangumis`）已废弃，于 4.0.0.9 移除。
 
 <a id="markdown-37-免费b币券充电" name="37-免费b币券充电"></a>
 ### 3.7. 免费B币券充电
