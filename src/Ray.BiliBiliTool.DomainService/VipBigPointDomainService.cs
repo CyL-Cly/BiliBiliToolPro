@@ -68,8 +68,8 @@ public class VipBigPointDomainService(
                     if (response.Code != 0)
                     {
                         logger.LogInformation(
-                            "大会员经验领取失败，错误信息：{message}",
-                            response.Message
+                            "大会员经验领取失败，响应原文：{msg}",
+                            response.ToJsonStr()
                         );
                         break;
                     }
@@ -83,6 +83,10 @@ public class VipBigPointDomainService(
                     logger.LogDebug("大会员经验领取失败，未知错误");
                     break;
             }
+        }
+        else
+        {
+            logger.LogInformation("获取大会员特权信息失败：{msg}", re.ToJsonStr());
         }
     }
 
@@ -282,7 +286,7 @@ public class VipBigPointDomainService(
     /// 需先经 deliver/material/receive 获取 task_id 与 token，
     /// 再经 heartbeat/mobile 上报观看进度，最后经 deliver/task/complete 上报完成（只能成功一次）。
     /// </remarks>
-    public async Task<bool> CompleteOgvWatchAsync(BiliCookie ck)
+    public async Task<bool> CompleteOgvWatchAsync(BiliCookie ck, CancellationToken ct = default)
     {
         //开始观看任务
         var startRe = await apiApi.StartOgvWatchAsync(
@@ -322,11 +326,11 @@ public class VipBigPointDomainService(
 
         try
         {
-            var watched = await ReportOgvWatchHeartbeatAsync(ck, countdownMs);
+            var watched = await ReportOgvWatchHeartbeatAsync(ck, countdownMs, ct);
             if (!watched)
                 logger.LogInformation("观看心跳未完整推进，仍尝试上报完成");
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             logger.LogInformation("观看上报异常：{msg}", e.Message);
         }
@@ -406,10 +410,14 @@ public class VipBigPointDomainService(
 
     /// <summary>
     /// 上报剧集观看心跳：开场一次 + 播放中每 60 秒一步，直到累计观看达到目标时长 + 30 秒缓冲。
-    /// 目标秒数优先用 deliver 返回的倒计时，不足 15 秒按 15 秒。
+    /// 目标秒数优先用 deliver 返回的倒计时，钳制到 [15, 1800] 秒。
     /// </summary>
     /// <returns>是否完整推进到目标观看时长</returns>
-    private async Task<bool> ReportOgvWatchHeartbeatAsync(BiliCookie ck, long countdownMs)
+    private async Task<bool> ReportOgvWatchHeartbeatAsync(
+        BiliCookie ck,
+        long countdownMs,
+        CancellationToken ct = default
+    )
     {
         if (
             !long.TryParse(OgvWatchRequest.SeasonId, out long sid)
@@ -432,7 +440,12 @@ public class VipBigPointDomainService(
         //接口返回毫秒（实测 season 接口 duration=7914625 对应约 7914 秒）；兼容旧的秒级数据：秒值不可能 >= 10000
         int videoDuration =
             episode.duration >= 10_000 ? episode.duration / 1000 : Math.Max(episode.duration, 15);
-        int target = Math.Max((int)(countdownMs / 1000), 15);
+        int rawTarget = (int)(countdownMs / 1000);
+        int target = Math.Clamp(rawTarget, 15, 1800);
+        if (rawTarget < 15 || rawTarget > 1800)
+        {
+            logger.LogInformation("倒计时时长异常，已钳制到 {target} 秒", target);
+        }
         if (videoDuration < target + 30)
         {
             logger.LogInformation(
@@ -471,7 +484,7 @@ public class VipBigPointDomainService(
         int elapsed = 0;
         while (true)
         {
-            await Task.Delay(60_000);
+            await Task.Delay(60_000, ct);
             elapsed += 60;
 
             var playing = await apiApi.UploadMobileHeartbeat(

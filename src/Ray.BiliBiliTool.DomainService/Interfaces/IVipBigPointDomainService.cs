@@ -29,5 +29,5 @@ public interface IVipBigPointDomainService : IDomainService
 
     Task<bool> CompleteV2Async(string taskCode, BiliCookie ck);
 
-    Task<bool> CompleteOgvWatchAsync(BiliCookie ck);
+    Task<bool> CompleteOgvWatchAsync(BiliCookie ck, CancellationToken ct = default);
 }

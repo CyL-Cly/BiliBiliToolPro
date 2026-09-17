@@ -1,6 +1,6 @@
 # 大会员大积分 / 观看剧集 — 待完善
 
-日期：2026-08-25
+日期：2026-08-25（2026-09-18 重写：e195803 + T4 闭环大部分条目）
 范围：VipBigPoint（ogvwatchnew + combine 反序列化 + 大会员经验观看）
 已排除：签到、会员购、追番/影视浏览、装扮商城（无 access_key 时均已成功）
 
@@ -15,74 +15,43 @@
 - `material/receive` **没有下线**：用有效 Cookie 可返回 `watch_count_down_cfg.task_id/token`（`task_id` 固定 `4320003`，`token` 每次变，`milliseconds=600000`）。
 - 拿到 `task_id/token` 后**立刻** `deliver/task/complete` → `-400 请求错误`。说明 complete 会校验「已连续观看约 10 分钟」，不是领完就能报。
 
-现行真实流程（推断，complete 成功包尚未抓到）：
+现行真实流程（已实现；complete 成功包尚未抓到）：
 
 ```
 receive/v2(ogvwatchnew)
   → material/receive 拿 task_id + token
-  → APP 心跳把连续观看做实（约 10 分钟）
+  → APP 心跳把连续观看做实（已接入 /x/report/heartbeat/mobile，60s 间隔真实推进）
   → deliver/task/complete(task_id, token, task_sign)
-  → 以 combine.state==3 且积分 +40 为准，不要信 complete/v2 的 success
+  → complete 后以 combine 复核为准：state==3 且积分 +40，不要信 complete/v2 的 success
 ```
+
+---
+
+## 已完成（2026-09-18，e195803 + T4）
+
+- `Sing_task_item` required 炸 combine → 已删属性 + 孤儿类，combine/签到 required 全可空并加守卫（e195803）。
+- 过期 `access_key` 参与签名 → 已随 04c2121 移除 access_key 依赖与告警。
+- ogvwatchnew 跳过心跳 → 已实现真实推进：60s/步、target=Clamp(countdownMs/1000,15,1800)+30s 缓冲、ct 透传（e195803）。
+- duration 单位 → 实测毫秒（`duration>=10000` 换算 /1000，兼容旧秒级）（e195803）。
+- complete 后无复核 → 已加 combine 复核，`ogvwatchnew.state==3` 才算完成（e195803）。
+- 生产「缺少 task_id/token」日志无原文 → 已带 ToJsonStr；Refit 绑定已验证无问题（属性名一致，Web 默认大小写不敏感）。
+- 死代码 WatchBangumi/GetBangumi、配置 ViewBangumis 已清理；bilitool bat/ps1 中文注释已英文化（e195803）。
 
 ---
 
 ## 现有错误 / 不完整实现
 
-### 1. ogvwatchnew 跳过心跳，领取凭证后立刻 complete
-
-- `VipBigPointDomainService.CompleteOgvWatchAsync`
-- `OgvWatchRequest.BuildStart` / `BuildComplete`
-- 流程：`material/receive` → 立刻 `deliver/task/complete`，中间无观看上报。
-- `WatchBangumi()` 已写网页剧集心跳，**从未被调用**；即便接上也不够（网页心跳不计任务）。
-- APP 心跳接口 `POST /x/report/heartbeat/mobile` 仅存在于 Bruno 样本，Agent 未实现。
-
-### 2. 生产日志「响应缺少 task_id/token」与探测不一致
-
-- 脚本：`StartOgvWatchAsync` 的 `code==0` 但 `watch_count_down_cfg.task_id/token` 为空。
-- 同账号 Cookie 直接打 `material/receive` 能拿到凭证。
-- 可疑点（未证实，需对照 APP 抓包和脚本实际发出的请求）：
-  - `OgvWatchRequest.BuildCommon` 写死 `c_locale/s_locale=zh-Hans_HK`、`channel=html5_app_bili`；Bruno 样本是 `zh_CN` + `channel=bili`。
-  - Refit/STJ 属性命名：若全局 camelCase，`watch_count_down_cfg` 会绑不上，表现为「缺少 token」。
-  - `BiliApiResponse<T>.Data` 为 `required`，空 data 会直接反序列化失败，与「缺少 token」日志不完全同类。
-
-### 3. 过期 access_key 仍会被带上
-
-- `ScoreTaskV2Request.Build` / `OgvWatchRequest.BuildCommon`：cookie 里有 `access_key` 就签名进去。
-- 过期值导致 `-400`；缺失可过。需要「无 / 无效则省略」，不要无脑附带。
-
-### 4. `TaskInfo.Sing_task_item` 为 required
-
-- `TaskInfo.cs`：`public required SingTaskItem Sing_task_item`
-- 代码已改走 `GetThreeDaySignAsync`，不再读该字段。
-- `GET /x/vip_point/task/combine` 间歇缺 `sing_task_item` 时，整个 VipBigPoint 流在 `GetCombineAsync` 反序列化炸掉。
-- 第一次用户日志（经验观看失败 + 第二次 combine 崩溃）就是这个。
-
-### 5. 大会员经验观看（VipExpress）脆弱
+### 1. 大会员经验观看（VipExpress）脆弱
 
 - `VipExpressAsync`：`privilege/my` state=2 → `WatchAndShareVideo`（日常投稿观看，可能因今日已看而跳过）→ 立刻 `experience/add` → 再 `GetCombineAsync`。
 - 失败日志只有 `deserializing the response`，未打 URL。可能是 combine 缺 `sing_task_item`，也可能是排行榜/视频详情 required 字段。
 - 未模拟「观看满约 1 分钟」的大会员经验条件。
 
-### 6. 完成判定不可靠
-
-- `CompleteV2Async` / `CompleteOgvWatchAsync` 以接口 `code==0` 为成功。
-- ogv 必须以事后 `combine` 的 `ogvwatchnew.state==3` 且积分为准。
-
 ---
 
 ## 待办
 
-1. `Sing_task_item` 改为可选，combine 缺字段时不崩。
-2. 过期/无效 `access_key` 不参与签名；缺失不告警成硬失败。
-3. 重做 ogvwatchnew：
-   - 对齐 APP 的 `material/receive` 请求（locale/channel/headers/UA）。
-   - 凭证与 complete 之间补上 **APP 心跳**（待抓包）。
-   - complete 走 `deliver/task/complete` + `task_id/token/task_sign`，禁止用 `complete/v2` 当完成。
-   - 成功以 combine 复核为准。
-4. 接入 `WatchBangumi` 或替换为 APP heartbeat；网页 heartbeat 不能作为任务完成依据。
-5. 查生产「缺少 token」：对比脚本实际发出的 `material/receive` 与 APP 抓包（含 JSON 命名策略）。
-6. 大会员经验观看：确认反序列化失败的具体接口；combine 容错后再看是否还要单独修观看。
+1. 大会员经验观看：确认反序列化失败的具体接口；combine 容错已就位，再看是否还要单独修观看。
 
 ---
 
@@ -100,13 +69,13 @@ Cookie / access_key **值打码，字段名保留**。`task_id` / `token` / `tas
 
 | # | 时机 | 预期接口 | 要确认的事 |
 |---|---|---|---|
-| A | 点任务入口、选剧、点播放 | `POST /pgc/activity/deliver/material/receive` | 请求头/Body 全量；响应是否始终有 `watch_count_down_cfg` |
-| B | 开始播放立刻 | `POST /x/report/heartbeat/mobile`（start） | `played_time`/`actual_played_time`/`session`/`epid`/`sid`/`start_ts`/`from_spmid` |
-| C | 播放中（任意一条即可） | 同上 heartbeat | 中间上报间隔、字段如何递增 |
-| D | 倒计时结束 / 连看满约 10 分钟 | 实际触发的 complete | **最关键**。预期 `POST /pgc/activity/deliver/task/complete`。Body 是否仍要 `task_id+token+task_sign`，有无别的字段 |
-| E | 完成后刷新任务页 | `GET /x/vip_point/task/combine` | `ogvwatchnew.state` 是否变为 3；`sing_task_item` 在不在 |
+| A | 点任务入口、选剧、点播放 | `POST /pgc/activity/deliver/material/receive` | 脚本已实现 receive 调用，重点是对照 headers/UA 差异：locale/channel/build 常量现与抓包样本不一致（脚本 `zh-Hans_HK`/`html5_app_bili`，样本 `zh_CN`/`bili`），评估是否要改；响应是否始终有 `watch_count_down_cfg` |
+| B | 开始播放立刻 | `POST /x/report/heartbeat/mobile`（start） | 脚本已有心跳实现，对照字段差异（重点 `play_type` 是否携带）；`played_time`/`actual_played_time`/`session`/`epid`/`sid`/`start_ts`/`from_spmid` |
+| C | 播放中（任意一条即可） | 同上 heartbeat | 脚本已有心跳实现，对照字段差异（重点 `play_type` 是否携带）；中间上报间隔、字段如何递增 |
+| D | 倒计时结束 / 连看满约 10 分钟 | 实际触发的 complete | **最关键**。预期 `POST /pgc/activity/deliver/task/complete`。脚本现用 `task_id+token+task_sign`+毫秒 `timestamp`；对照 Body 字段有无出入、有无别的字段 |
+| E | 完成后刷新任务页 | `GET /x/vip_point/task/combine` | 脚本已复核 state；确认 `ogvwatchnew.state` 成功时确为 3；`sing_task_item` 在不在 |
 
-没有 **D 的成功响应**，脚本不能改 complete。没有 **B/C**，无法补心跳，立刻 complete 会继续 `-400`。
+没有 **D 的成功响应**，complete 成功分支仍是两态推断（`-400`/成功）+ 复核兜底；B/C 不再阻塞（心跳已实现），但需对照字段（重点 `play_type`）。
 
 ### 可选
 
@@ -125,3 +94,12 @@ receive/v2、装扮商城 complete/v2、签到、会员购、追番、影视、�
 - 不要在无 APP 心跳、无成功 complete 抓包的情况下改死脚本。
 - 不要把过期 `access_key` 继续塞进签名。
 - 不要用 complete 接口自己的 `code==0` 作为 ogv 完成依据。
+
+---
+
+## 已按 2026-09-18 修复后仍可能的残余风险
+
+- complete 成功响应包仍未抓到：现按 `-400`/成功两态处理 + combine 复核兜底。
+- 开场心跳未带 `play_type`。
+- 心跳 `timestamp` 毫秒单位未验证。
+- locale/channel 指纹未对齐（脚本 `zh-Hans_HK`/`html5_app_bili` vs 样本 `zh_CN`/`bili`）：有意不动，等抓包。

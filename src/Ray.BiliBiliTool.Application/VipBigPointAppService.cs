@@ -244,7 +244,10 @@ public class VipBigPointAppService(
             "日常任务",
             "ogvwatchnew",
             ck,
-            async (_, _) => await vipBigPointDomainService.CompleteOgvWatchAsync(ck)
+            async (_, _) => await vipBigPointDomainService.CompleteOgvWatchAsync(
+                ck,
+                cancellationToken
+            )
         );
     }
 }

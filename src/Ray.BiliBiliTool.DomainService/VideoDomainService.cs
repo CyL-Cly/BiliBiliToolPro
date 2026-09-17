@@ -132,7 +132,7 @@ public class VideoDomainService(
                 catch (Exception e)
                 {
                     //ignore
-                    logger.LogError("打开视频异常：{msg}", e.Message);
+                    logger.LogError(e, "打开视频异常：{msg}", e.Message);
                 }
             }
             await ShareVideo(targetVideo!, ck);
